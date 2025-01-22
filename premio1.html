@@ -822,6 +822,7 @@ window.addEventListener('load', function() {
   const pixQrCode = document.getElementById("pixQrCode"); // Adicionando o elemento para o QR Code
   const selectedTitlesDiv = document.getElementById("selectedTitles"); // Elemento para exibir os títulos gerados
   const copyButton = document.getElementById('copy-pix-key-button'); // Corrigido o id aqui
+  const cards = document.querySelectorAll('.card');
 
   if (copyButton) {
     copyButton.addEventListener('click', function() {
@@ -838,6 +839,21 @@ window.addEventListener('load', function() {
   }
 
   let totalValue = parseFloat(totalValueInput.value) || 1;
+
+  // Adicionando evento de clique para cada card
+cards.forEach(card => {
+  card.addEventListener('click', () => {
+    // Obtendo o valor do card selecionado
+    const selectedValue = parseFloat(card.getAttribute('data-value'));
+    
+    // Somando o valor do card ao valor total atual
+    totalValue += selectedValue;
+    totalValueInput.value = totalValue;
+    
+    // Atualizando o botão de valor
+    updateButton();
+  });
+});
 
   // Função para atualizar o botão com o valor correto
   function updateButton() {
