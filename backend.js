@@ -115,7 +115,7 @@ app.post("/gerar-chave-pix", async (req, res) => {
 });
 
 // Iniciar o servidor
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Usa a porta do ambiente ou 3000 como padrão
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
