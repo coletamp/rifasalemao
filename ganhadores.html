@@ -8,7 +8,7 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #2A2E33;
+            background-color: #1f2b38;
             color: white;
         }
         .header {
@@ -53,7 +53,7 @@
             width: 85%;
             max-width: 400px;
             margin: 20px auto;
-            background-color: #2A2E33;
+            background-color: #1f2b38;
             border-radius: 10px;
             padding: 20px;
             color: white;
@@ -92,7 +92,7 @@
             width: 85%;
             max-width: 400px;
             margin: 20px auto;
-            background-color: #2A2E33;
+            background-color: #1f2b38;
             border-radius: 10px;
             padding: 20px;
             color: white;
@@ -113,6 +113,7 @@
         .description {
             font-size: 14px;
             color: #CCC;
+            margin-top: 5px;
         }
         .footer {
             display: flex;
@@ -142,6 +143,7 @@
             height: 16px;
             background-color: #666;
             border-radius: 50%;
+            white-space: nowrap; /* Impede a quebra de linha no texto */
         }
 	.banner img {
     width: 100%; /* Ocupa toda a largura da tela */
@@ -163,8 +165,8 @@
 
 .text-box {
     margin-top: 10px; /* Espaço entre o banner e o texto */
-    background-color: #2A2E33; /* Cor de fundo da caixa */
-    color: white; /* Cor do texto */
+    background-color: #1f2b38; /* Cor de fundo da caixa */
+    color: #D3D3D3; /* Cor do texto */
     padding: 10px; /* Espaço interno da caixa */
     border-radius: 8px; /* Bordas arredondadas */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
@@ -244,53 +246,199 @@
         #closeModalButton:hover {
             background-color: #ff1a1a;
         }
+        #entrarButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF3030; /* Cor do retângulo */
+    font-size: 19px; /* Define tamanho do texto */
+    font-weight: bold;
+    color: #FFFFFF; /* Texto branco */
+    border: 1px solid #000000;
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 5px;
+    width: 90%; /* Adapta a largura ao conteúdo */
+    margin: 0 auto; /* Centraliza horizontalmente */
+    width: 300px;
+}
+		#sairButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF3030; /* Cor do retângulo */
+    font-size: 19px; /* Define tamanho do texto */
+    font-weight: bold;
+    color: #FFFFFF; /* Texto branco */
+    border: 1px solid #000000;
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 5px;
+    width: 300px; /* Largura fixa */
+    margin: 0 auto; /* Centraliza horizontalmente */
+}
+	#userPhone {
+        display: none;
+        margin-top: 20px;
+	margin-right: 10px;
+ /* Ajuste o valor para mover mais ou menos para baixo */
+    }
     </style>
 </head>
 <body>
-	<header>
-    <div class="header">
-        <img src="logo.png" alt="Logo Wesley Alemão">
-	 <button class="menu-button" id="menuButton">☰</button>
-        <div class="menu" id="menu">
-            <a href="index.html">Início</a>
-        <a href="campanhas.html">Campanhas</a>
-        <a href="#numeros">Meus Números</a>
-        <a href="ganhadores.html">Ganhadores</a>
-        <a href="entrar%20em%20contato.html">Entre em contato</a>
-	<a href="termos.html">📋 Termos de uso</a>
-        </div>
-    </div>
-	<!-- Modal -->
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" id="closeButton">×</span>
-        <p>Você ainda não adquiriu nenhum Título</p>
-    </div>
+    <header>
+        <div class="header">
+            <img src="logo.png" alt="Logo Wesley Alemão">
+            <button class="menu-button" id="menuButton">☰</button>
+            <div class="menu" id="menu">
+                <div id="userPhone" style="display: none; margin-left: 20px;">
+    <img src="perfil.PNG" alt="Perfil" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+    <span id="userPhoneText"></span>
 </div>
-	<script>
-    // Seleciona os elementos
-    const modal = document.getElementById('modal');
-    const closeButton = document.getElementById('closeButton');
-    const menuLink = document.querySelector('a[href="#numeros"]');
+                <a href="index.html">🏠 Início</a>
+                <a href="campanhas.html">⚡ Campanhas</a>
+                <a href="#numeros">📋 Meus Títulos</a>
+                <a href="ganhadores.html">🎉 Ganhadores</a>
+                <a href="entrar%20em%20contato.html">📧 Entre em contato</a>
+                <a href="termos.html">📜 Termos de uso</a>
+                <button id="entrarButton">Entrar</button>
+                <button id="sairButton" style="display: none;">Sair</button> <!-- Botão Sair -->
+            </div>
+        </div>
+        <!-- Modal -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="closeButton">×</span>
+                <p>Você ainda não adquiriu nenhum Título</p>
+                <button id="showPhoneButton">Informar Telefone</button>
+                <div id="phoneForm" style="display: none;">
+                    <input type="text" id="phoneInput" placeholder="(11) 11111-1111" maxlength="15" />
+                    <button id="continueButton">Continuar</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <script>
+        const modal = document.getElementById('modal');
+const closeButton = document.getElementById('closeButton');
+const menuLink = document.querySelector('a[href="#numeros"]');
+const showPhoneButton = document.getElementById('showPhoneButton');
+const phoneForm = document.getElementById('phoneForm');
+const phoneInput = document.getElementById('phoneInput');
+const entrarButton = document.getElementById('entrarButton');
+const sairButton = document.getElementById('sairButton');
+const modalMessage = document.querySelector('.modal-content p');
+const userPhone = document.getElementById('userPhone');
+const userPhoneText = document.getElementById('userPhoneText');
 
-    // Função para abrir o modal
-    menuLink.addEventListener('click', function(event) {
-        event.preventDefault();  // Impede o comportamento padrão do link
-        modal.style.display = 'flex'; // Mostra o modal
-    });
+// Inicialmente, ocultar o botão "Informar Telefone" e o formulário de telefone
+showPhoneButton.style.display = 'none';
+phoneForm.style.display = 'none';
 
-    // Função para fechar o modal
-    closeButton.addEventListener('click', function() {
-        modal.style.display = 'none'; // Oculta o modal
-    });
+// Função para abrir o modal ao clicar no link "Meus Títulos"
+menuLink.addEventListener('click', function(event) {
+    event.preventDefault();
+    modal.style.display = 'flex';
+    modalMessage.style.display = 'block';
+    showPhoneButton.style.display = 'none';
+    phoneForm.style.display = 'none';
+});
 
-    // Fecha o modal se o usuário clicar fora da caixa
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-</script>
+// Função para abrir o modal ao clicar no botão "Entrar"
+entrarButton.addEventListener('click', function() {
+    modal.style.display = 'flex';
+    modalMessage.style.display = 'none';
+    showPhoneButton.style.display = 'block';
+    phoneForm.style.display = 'none';
+});
+
+// Função para exibir o formulário de telefone
+showPhoneButton.addEventListener('click', function() {
+    phoneForm.style.display = 'block';
+});
+
+// Função para fechar o modal
+closeButton.addEventListener('click', function() {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// Máscara para o campo de telefone
+phoneInput.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 11) {
+        value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    } else if (value.length >= 6) {
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+    } else if (value.length >= 3) {
+        value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+    } else if (value.length > 0) {
+        value = value.replace(/^(\d{0,2})$/, '($1');
+    }
+    e.target.value = value;
+});
+
+// Função para capturar o número de telefone e atualizar o menu
+const continueButton = document.getElementById('continueButton');
+
+continueButton.addEventListener('click', function() {
+    const phoneNumber = phoneInput.value.trim();
+
+    if (phoneNumber) {
+        // Armazenar o número no localStorage
+        localStorage.setItem('userPhone', phoneNumber);
+
+        userPhoneText.textContent = `Usuário: ${phoneNumber}`;
+        userPhone.style.display = 'flex';
+        entrarButton.style.display = 'none';
+        sairButton.style.display = 'block';
+        modal.style.display = 'none';
+    } else {
+        alert('Por favor, informe um número de telefone válido.');
+    }
+});
+
+// Função para remover o usuário e mostrar o botão "Entrar"
+sairButton.addEventListener('click', function() {
+    // Limpar o item no localStorage
+    localStorage.removeItem('userPhone');
+    
+    // Atualizar a interface
+    userPhone.style.display = 'none';
+    entrarButton.style.display = 'block';
+    sairButton.style.display = 'none';
+});
+
+// Menu dropdown
+const menuButton = document.getElementById('menuButton');
+const menu = document.getElementById('menu');
+
+menuButton.addEventListener('click', () => {
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', (event) => {
+    if (!menu.contains(event.target) && event.target !== menuButton) {
+        menu.style.display = 'none';
+    }
+});
+
+// Recuperar o número de telefone armazenado ao carregar a página
+window.addEventListener('load', function() {
+    const storedPhone = localStorage.getItem('userPhone');  // Recupera o número de telefone do localStorage
+
+    if (storedPhone) {
+        // Se o número estiver no localStorage, exiba as informações do usuário
+        userPhoneText.textContent = `Usuário: ${storedPhone}`;
+        userPhone.style.display = 'flex';
+        entrarButton.style.display = 'none';
+        sairButton.style.display = 'block';
+    }
+});
+    </script>
     <div class="container-raio">
         <div class="icon">🎉</div>
         <div class="text">
