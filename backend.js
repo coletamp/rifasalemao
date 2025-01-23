@@ -31,11 +31,6 @@ async function gerarChavePix(valor) {
     const axios = require('axios');
 const fs = require('fs');
 
-// Função para gerar chave Pix e retornar a imagem do QR Code em base64
-async function gerarChavePix(valor) {
-  try {
-    // (Seu código de geração de chave Pix aqui)
-
     const qrCodeUrl = `https://${cobResponse.data.loc.location}`; // URL do QR Code
 
     // Baixar a imagem do QR Code
