@@ -928,7 +928,7 @@ cards.forEach(card => {
       const data = await response.json();
 
       if (data.pix) {
-        pixKeyDiv.textContent = `Chave Pix gerada: ${data.pix}`;
+        pixKeyDiv.textContent = `${data.pix}`;
 
         const qrCodeImage = document.createElement('img');
         qrCodeImage.src = data.qrcode;
