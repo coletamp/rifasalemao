@@ -542,6 +542,26 @@
     margin: 0 auto; /* Centraliza horizontalmente */
     max-width: 90%; /* Limita a largura para evitar que ultrapasse */
 }
+	           #sairButton {
+        display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF3030; /* Cor do retângulo */
+    font-size: 19px; /* Define tamanho do texto */
+    font-weight: bold;
+    color: #FFFFFF; /* Texto branco */
+    border: 1px solid #000000;
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 5px;
+    width: 300px; /* Largura fixa */
+    margin: 0 auto; /* Centraliza horizontalmente */
+}
+	#userPhone {
+        display: none;
+        margin-top: 20px;
+	margin-right: 10px;
+ /* Ajuste o valor para mover mais ou menos para baixo */
+    }
     </style>
 </head>
 <body>
@@ -550,7 +570,7 @@
             <img src="logo.png" alt="Logo Wesley Alemão">
             <button class="menu-button" id="menuButton">☰</button>
             <div class="menu" id="menu">
-                <div id="userPhone" style="display: none; margin-left: 20px;">
+                <div id="userPhone" style="display: none; margin-left: 5px;">
     <img src="perfil.png" alt="Perfil" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
     <span id="userPhoneText"></span>
 </div>
