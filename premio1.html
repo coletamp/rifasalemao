@@ -830,14 +830,20 @@ window.addEventListener('load', function() {
   const totalValueInput = document.getElementById("totalValue");
   const calculateButton = document.getElementById("calculateButton");
   const pixKeyDiv = document.getElementById("pixKey");
-  const pixQrCode = document.getElementById("pixQrCode"); // Adicionando o elemento para o QR Code
-  const selectedTitlesDiv = document.getElementById("selectedTitles"); // Elemento para exibir os títulos gerados
-  const copyButton = document.getElementById('copy-pix-key-button'); // Corrigido o id aqui
+  const pixQrCode = document.getElementById("pixQrCode");
+  const selectedTitlesDiv = document.getElementById("selectedTitles");
+  const copyButton = document.getElementById('copy-pix-key-button');
   const cards = document.querySelectorAll('.card');
+
+  // Verificação de login (essa lógica pode ser adaptada conforme o seu sistema de login)
+  const isLoggedIn = false; // Substitua essa variável pela lógica de autenticação do seu sistema
+  const user = { // Exemplo de objeto do usuário autenticado (substitua com dados reais)
+    id: 1, 
+    name: 'Usuário Teste'
+  };
 
   if (copyButton) {
     copyButton.addEventListener('click', function() {
-      // Adicionar aqui o código para copiar a chave Pix
       const pixKey = pixKeyDiv.textContent; // Obtém o texto da chave Pix
       navigator.clipboard.writeText(pixKey).then(function() {
         alert("Chave Pix copiada com sucesso!");
@@ -852,19 +858,14 @@ window.addEventListener('load', function() {
   let totalValue = parseFloat(totalValueInput.value) || 1;
 
   // Adicionando evento de clique para cada card
-cards.forEach(card => {
-  card.addEventListener('click', () => {
-    // Obtendo o valor do card selecionado
-    const selectedValue = parseFloat(card.getAttribute('data-value'));
-    
-    // Somando o valor do card ao valor total atual
-    totalValue += selectedValue;
-    totalValueInput.value = totalValue;
-    
-    // Atualizando o botão de valor
-    updateButton();
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const selectedValue = parseFloat(card.getAttribute('data-value'));
+      totalValue += selectedValue;
+      totalValueInput.value = totalValue;
+      updateButton();
+    });
   });
-});
 
   // Função para atualizar o botão com o valor correto
   function updateButton() {
@@ -913,6 +914,11 @@ cards.forEach(card => {
 
   // Evento de cálculo e geração de chave Pix
   calculateButton.addEventListener("click", async () => {
+    if (!isLoggedIn) {
+      alert("Você precisa estar logado para comprar títulos.");
+      return; // Impede a geração da chave Pix caso o usuário não esteja logado
+    }
+
     const pricePerNumber = 0.06;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
@@ -951,7 +957,7 @@ cards.forEach(card => {
 
             const paymentStatusData = await paymentStatusResponse.json();
 
-            if (paymentStatusData.status === "CONFIRMED") {  // Supondo que a resposta seja 'CONFIRMED' no status
+            if (paymentStatusData.status === "CONFIRMED") {
               console.log("Pagamento confirmado!");
               const titles = generateTitles(totalValue);
               selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
@@ -973,6 +979,7 @@ cards.forEach(card => {
     }
   });
 </script>
+
 
 
 <br>
