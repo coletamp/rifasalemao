@@ -28,7 +28,32 @@ var auth = Buffer.from(data_credentials).toString("base64");
 async function gerarChavePix(valor) {
   try {
     console.log("Iniciando a geração da chave Pix...");
+    const axios = require('axios');
+const fs = require('fs');
 
+// Função para gerar chave Pix e retornar a imagem do QR Code em base64
+async function gerarChavePix(valor) {
+  try {
+    // (Seu código de geração de chave Pix aqui)
+
+    const qrCodeUrl = `https://${cobResponse.data.loc.location}`; // URL do QR Code
+
+    // Baixar a imagem do QR Code
+    const qrCodeResponse = await axios.get(qrCodeUrl, { responseType: 'arraybuffer' });
+
+    // Converter a imagem para base64
+    const qrCodeBase64 = Buffer.from(qrCodeResponse.data, 'binary').toString('base64');
+
+    return {
+      qrcode: `data:image/png;base64,${qrCodeBase64}`, // Enviar como base64
+      pix: cobResponse.data.pixCopiaECola,
+    };
+  } catch (error) {
+    console.error("Erro ao gerar chave Pix:", error);
+    throw error;
+  }
+}
+    
     const agent = new https.Agent({
       pfx: certificado,
       passphrase: "",  // Se houver senha, insira aqui
