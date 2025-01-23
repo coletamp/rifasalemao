@@ -117,6 +117,36 @@ app.post("/gerar-chave-pix", async (req, res) => {
   }
 });
 
+// Adicionando o endpoint para verificar o pagamento
+app.post("/verificar-pagamento", async (req, res) => {
+  try {
+    console.log("Verificando pagamento...");
+
+    const { idPagamento } = req.body;  // Aqui, você vai pegar o ID do pagamento enviado no corpo da requisição.
+
+    // Adapte isso para fazer a verificação do pagamento de acordo com a API do seu provedor
+    const configVerificarPagamento = {
+      method: "GET",  // Ou POST, dependendo da API que você estiver utilizando
+      url: `https://pix-h.api.efipay.com.br/v2/pagamentos/${idPagamento}`, // A URL pode variar conforme o seu provedor
+      headers: {
+        Authorization: `Bearer ${auth}`, // Use o token recebido anteriormente
+        "Content-Type": "application/json",
+      },
+    };
+
+    // Aqui, fazemos a requisição à API para verificar o pagamento
+    const respostaPagamento = await axios(configVerificarPagamento);
+
+    // Retorna a resposta com o status do pagamento
+    res.json({
+      status: respostaPagamento.data.status,  // Exemplo de resposta que você pode ajustar conforme a API
+    });
+  } catch (error) {
+    console.error("Erro ao verificar pagamento:", error);
+    res.status(500).json({ error: "Erro ao verificar pagamento" });
+  }
+});
+
 // Iniciar o servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
