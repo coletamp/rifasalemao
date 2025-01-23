@@ -532,6 +532,16 @@
     margin: 0 auto; /* Centraliza horizontalmente */
     width: 300px;
 }
+	#pix-container {
+  text-align: center;
+}
+	#pixKey {
+    text-align: center;
+    word-wrap: break-word; /* Compatibilidade com navegadores antigos */
+    overflow-wrap: break-word; /* Compatível com navegadores modernos */
+    margin: 0 auto; /* Centraliza horizontalmente */
+    max-width: 90%; /* Limita a largura para evitar que ultrapasse */
+}
     </style>
 </head>
 <body>
@@ -800,8 +810,10 @@ window.addEventListener('load', function() {
 	<div id="selectedTitles"></div>
 
 	<div id="pix-container">
-    <p id="pix-key" style="display:none;"></p> <!-- A chave Pix será mostrada aqui -->
-    <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button> <!-- Botão para copiar -->
+    <div id="pix-box">
+        <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+    </div>
+    <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
 </div>
 
 <div id="titulo-container" style="display:none;">
@@ -810,7 +822,6 @@ window.addEventListener('load', function() {
         <!-- Os títulos serão listados aqui -->
     </ul>
 </div>
-
 
 <script>
   // Selecionando os elementos principais
@@ -935,12 +946,12 @@ cards.forEach(card => {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ pixKey: data.pix }),
+              body: JSON.stringify({ idPagamento: data.pix }),
             });
 
             const paymentStatusData = await paymentStatusResponse.json();
 
-            if (paymentStatusData.paymentConfirmed) {
+            if (paymentStatusData.status === "CONFIRMED") {  // Supondo que a resposta seja 'CONFIRMED' no status
               console.log("Pagamento confirmado!");
               const titles = generateTitles(totalValue);
               selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
@@ -964,7 +975,7 @@ cards.forEach(card => {
 </script>
 
 
-
+<br>
 
 	<!-- Botão para abrir/fechar a descrição -->
 <button id="toggleButton">Descrição/Regulamento</button>
