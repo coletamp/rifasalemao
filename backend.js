@@ -126,7 +126,7 @@ app.post("/verificar-pagamento", async (req, res) => {
 
     // Adapte isso para fazer a verificação do pagamento de acordo com a API do seu provedor
     const configVerificarPagamento = {
-      method: "GET",  // Ou POST, dependendo da API que você estiver utilizando
+      method: "GET",  // Aqui você usa GET para consultar o status do pagamento
       url: `https://pix-h.api.efipay.com.br/v2/pagamentos/${idPagamento}`, // A URL pode variar conforme o seu provedor
       headers: {
         Authorization: `Bearer ${auth}`, // Use o token recebido anteriormente
