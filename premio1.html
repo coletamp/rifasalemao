@@ -934,10 +934,6 @@ window.addEventListener('load', function() {
 
   // Evento de cálculo e geração de chave Pix
   calculateButton.addEventListener("click", async () => {
-    if (!isLoggedIn) {
-      alert("Você precisa estar logado para comprar títulos.");
-      return; // Impede a geração da chave Pix caso o usuário não esteja logado
-    }
 
     const pricePerNumber = 0.06;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
