@@ -1,4 +1,4 @@
-"use strict";
+"use strict"; 
 const https = require("https");
 const axios = require("axios");
 const fs = require("fs");
@@ -89,6 +89,41 @@ async function gerarChavePix(valor) {
   }
 }
 
+// Função para verificar o status do pagamento
+async function verificarPagamento(pixKey) {
+  try {
+    console.log("Verificando status do pagamento...");
+
+    const agent = new https.Agent({
+      pfx: certificado,
+      passphrase: "",
+    });
+
+    const configPagamento = {
+      method: "POST",
+      url: "https://pix-h.api.efipay.com.br/v2/cob/" + pixKey + "/status",
+      headers: {
+        Authorization: `Bearer ${auth}`,
+        "Content-Type": "application/json",
+      },
+      httpsAgent: agent,
+    };
+
+    const pagamentoResponse = await axios(configPagamento);
+
+    if (pagamentoResponse.data.status === "PAID") {
+      console.log("Pagamento confirmado!");
+      return { paymentConfirmed: true };
+    } else {
+      console.log("Pagamento não confirmado.");
+      return { paymentConfirmed: false };
+    }
+  } catch (error) {
+    console.error("Erro ao verificar pagamento:", error);
+    throw error; // Relança o erro para ser capturado pela rota
+  }
+}
+
 // Rota para gerar a chave Pix
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
@@ -111,6 +146,23 @@ app.post("/gerar-chave-pix", async (req, res) => {
   } catch (error) {
     console.error("Erro completo:", error.response?.data || error);
     res.status(500).json({ error: "Erro ao gerar chave Pix" });
+  }
+});
+
+// Rota para verificar o status do pagamento
+app.post("/verificar-pagamento", async (req, res) => {
+  try {
+    const { pixKey } = req.body;
+
+    // Log para verificar o pixKey recebido
+    console.log("PixKey recebido para verificar pagamento:", pixKey);
+
+    const status = await verificarPagamento(pixKey);
+
+    res.json(status);
+  } catch (error) {
+    console.error("Erro ao verificar pagamento:", error);
+    res.status(500).json({ error: "Erro ao verificar pagamento" });
   }
 });
 
