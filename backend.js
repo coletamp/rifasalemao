@@ -104,8 +104,7 @@ const fs = require('fs');
     console.error("Erro ao gerar chave Pix:", error);
     // Verifica a resposta do erro e exibe mais detalhes
     if (error.response) {
-  console.error("Resposta de erro da API:", error.response.data);
-  console.error("Status do erro:", error.response.status);
+      console.error("Resposta de erro da API:", error.response.data);
     } else if (error.request) {
       console.error("Erro na requisição:", error.request);
     } else {
