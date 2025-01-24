@@ -532,6 +532,36 @@
     margin: 0 auto; /* Centraliza horizontalmente */
     width: 300px;
 }
+	#pix-container {
+  text-align: center;
+}
+	#pixKey {
+    text-align: center;
+    word-wrap: break-word; /* Compatibilidade com navegadores antigos */
+    overflow-wrap: break-word; /* Compatível com navegadores modernos */
+    margin: 0 auto; /* Centraliza horizontalmente */
+    max-width: 90%; /* Limita a largura para evitar que ultrapasse */
+}
+	           #sairButton {
+        display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF3030; /* Cor do retângulo */
+    font-size: 19px; /* Define tamanho do texto */
+    font-weight: bold;
+    color: #FFFFFF; /* Texto branco */
+    border: 1px solid #000000;
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 5px;
+    width: 300px; /* Largura fixa */
+    margin: 0 auto; /* Centraliza horizontalmente */
+}
+	#userPhone {
+        display: none;
+        margin-top: 20px;
+	margin-right: 10px;
+ /* Ajuste o valor para mover mais ou menos para baixo */
+    }
     </style>
 </head>
 <body>
@@ -540,7 +570,7 @@
             <img src="logo.png" alt="Logo Wesley Alemão">
             <button class="menu-button" id="menuButton">☰</button>
             <div class="menu" id="menu">
-                <div id="userPhone" style="display: none; margin-left: 20px;">
+                <div id="userPhone" style="display: none; margin-left: 5px;">
     <img src="perfil.png" alt="Perfil" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
     <span id="userPhoneText"></span>
 </div>
@@ -795,66 +825,60 @@ window.addEventListener('load', function() {
         <button id="increment">+</button>
     </div>
     <button id="calculateButton">Quero participar R$ 2,04</button>
+	<div id="pixQrCode"></div>
 	<div id="pixKey"></div>
+	<div id="selectedTitles"></div>
+
+	<div id="pix-container">
+    <div id="pix-box">
+        <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+    </div>
+    <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
+</div>
+
+<div id="titulo-container" style="display:none;">
+    <h3>Títulos Disponíveis:</h3>
+    <ul id="titulo-list">
+        <!-- Os títulos serão listados aqui -->
+    </ul>
+</div>
 
 <script>
-	// Selecionando os elementos principais
+  // Selecionando os elementos principais
   const decrementButton = document.getElementById("decrement");
   const incrementButton = document.getElementById("increment");
   const totalValueInput = document.getElementById("totalValue");
   const calculateButton = document.getElementById("calculateButton");
   const pixKeyDiv = document.getElementById("pixKey");
-  let totalValue = parseFloat(totalValueInput.value) || 1;
+  const pixQrCode = document.getElementById("pixQrCode");
+  const selectedTitlesDiv = document.getElementById("selectedTitles");
+  const copyButton = document.getElementById('copy-pix-key-button');
+  const cards = document.querySelectorAll('.card');
 
-	// Função para atualizar o botão com o valor correto
-  function updateButton() {
-    const pricePerNumber = 0.06;
-    const totalAmount = (totalValue * pricePerNumber).toFixed(2);
-    calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
+  // Função para verificar se o telefone está salvo no localStorage
+  function isPhoneSaved() {
+    return localStorage.getItem('userPhone') !== null;
   }
 
-	// Evento para decrementar o valor
-  decrementButton.addEventListener("click", () => {
-    if (totalValue > 1) {
-      totalValue--;
-      totalValueInput.value = totalValue;
-      updateButton();
-    }
-  });
+  // Verificação de login (essa lógica pode ser adaptada conforme o seu sistema de login)
+  const isLoggedIn = false; // Substitua essa variável pela lógica de autenticação do seu sistema
+  const user = { // Exemplo de objeto do usuário autenticado (substitua com dados reais)
+    id: 1, 
+    name: 'Usuário Teste'
+  };
 
-	// Evento para incrementar o valor
-  incrementButton.addEventListener("click", () => {
-    totalValue++;
-    totalValueInput.value = totalValue;
-    updateButton();
-  });
-
-	// Atualiza o valor do botão sempre que o valor do input mudar
-  totalValueInput.addEventListener("input", () => {
-    totalValue = parseFloat(totalValueInput.value) || 1;
-    updateButton();
-  });
-
-	// Atualiza o botão inicialmente
-  updateButton();
-
-	// Adicionando funcionalidade para os cards (se necessário no seu caso)
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-        card.addEventListener('click', function () {
-            const cardValue = parseFloat(card.getAttribute('data-value'));
-            totalValue += cardValue;
-            totalValueInput.value = totalValue;
-            updateButton();
-        });
-    });
-	
+  // Verificando se o telefone está salvo antes de permitir gerar a chave Pix
   calculateButton.addEventListener("click", async () => {
+    if (!isPhoneSaved()) {
+      alert("Por favor, faça login informando seu número de telefone primeiro.");
+      return; // Impede a execução do restante da função se o telefone não estiver salvo
+    }
+
     const pricePerNumber = 0.06;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
     try {
-      const response = await fetch("http://localhost:3000/gerar-chave-pix", {
+      const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -863,17 +887,128 @@ window.addEventListener('load', function() {
       });
 
       const data = await response.json();
-      if (data.chavePix) {
-        pixKeyDiv.textContent = `Chave Pix gerada: ${data.chavePix}`;
+
+      if (data.pix) {
+        pixKeyDiv.textContent = `${data.pix}`;
+
+        const qrCodeImage = document.createElement('img');
+        qrCodeImage.src = data.qrcode;
+        pixQrCode.innerHTML = '';  
+        pixQrCode.appendChild(qrCodeImage);
+
+        // Exibindo o botão "Copiar chave Pix"
+        copyButton.style.display = "inline-block"; 
+
+        // Verificação real de pagamento
+        setInterval(async () => {
+          try {
+            const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ idPagamento: data.pix }),
+            });
+
+            const paymentStatusData = await paymentStatusResponse.json();
+
+            if (paymentStatusData.status === "CONFIRMED") {
+              console.log("Pagamento confirmado!");
+              const titles = generateTitles(totalValue);
+              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
+              selectedTitlesDiv.style.display = "block";  
+            } else {
+              console.log("Pagamento não confirmado.");
+            }
+          } catch (error) {
+            console.error("Erro ao verificar o pagamento:", error);
+          }
+        }, 5000); // A cada 5 segundos, verificando se o pagamento foi confirmado
       } else {
+        console.log("Erro ao gerar chave Pix ou QR Code.");
         pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
       }
     } catch (error) {
+      console.error("Erro ao conectar com o servidor:", error);
       pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
-      console.error("Erro:", error);
     }
   });
+
+  if (copyButton) {
+    copyButton.addEventListener('click', function() {
+      const pixKey = pixKeyDiv.textContent; // Obtém o texto da chave Pix
+      navigator.clipboard.writeText(pixKey).then(function() {
+        alert("Chave Pix copiada com sucesso!");
+      }).catch(function(err) {
+        console.error("Erro ao copiar a chave Pix:", err);
+      });
+    });
+  } else {
+    console.error("Elemento do botão não encontrado.");
+  }
+
+  let totalValue = parseFloat(totalValueInput.value) || 1;
+
+  // Adicionando evento de clique para cada card
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const selectedValue = parseFloat(card.getAttribute('data-value'));
+      totalValue += selectedValue;
+      totalValueInput.value = totalValue;
+      updateButton();
+    });
+  });
+
+  // Função para atualizar o botão com o valor correto
+  function updateButton() {
+    const pricePerNumber = 0.06;
+    const totalAmount = (totalValue * pricePerNumber).toFixed(2);
+    calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
+  }
+
+  // Evento para decrementar o valor
+  decrementButton.addEventListener("click", () => {
+    if (totalValue > 1) {
+      totalValue--;
+      totalValueInput.value = totalValue;
+      updateButton();
+    }
+  });
+
+  // Evento para incrementar o valor
+  incrementButton.addEventListener("click", () => {
+    totalValue++;
+    totalValueInput.value = totalValue;
+    updateButton();
+  });
+
+  // Atualiza o valor do botão sempre que o valor do input mudar
+  totalValueInput.addEventListener("input", () => {
+    totalValue = parseFloat(totalValueInput.value) || 1;
+    updateButton();
+  });
+
+  // Atualiza o botão inicialmente
+  updateButton();
+
+  // Função para gerar os títulos
+  function generateTitles(totalValue) {
+    const titles = [];
+    for (let i = 1; i <= totalValue; i++) {
+      let titleNumber = i.toString().padStart(7, "0");
+      if (titleNumber === "0000009" || titleNumber === "0000010") {
+        continue;
+      }
+      titles.push(`Título ${titleNumber}`);
+    }
+    return titles;
+  }
 </script>
+
+
+
+
+<br>
 
 	<!-- Botão para abrir/fechar a descrição -->
 <button id="toggleButton">Descrição/Regulamento</button>
