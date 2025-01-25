@@ -28,27 +28,7 @@ var auth = Buffer.from(data_credentials).toString("base64");
 async function gerarChavePix(valor) {
   try {
     console.log("Iniciando a geração da chave Pix...");
-    const axios = require('axios');
-const fs = require('fs');
 
-    const qrCodeUrl = `https://${cobResponse.data.loc.location}`; // URL do QR Code
-
-    // Baixar a imagem do QR Code
-    const qrCodeResponse = await axios.get(qrCodeUrl, { responseType: 'arraybuffer' });
-
-    // Converter a imagem para base64
-    const qrCodeBase64 = Buffer.from(qrCodeResponse.data, 'binary').toString('base64');
-
-    return {
-      qrcode: `data:image/png;base64,${qrCodeBase64}`, // Enviar como base64
-      pix: cobResponse.data.pixCopiaECola,
-    };
-  } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error);
-    throw error;
-  }
-}
-    
     const agent = new https.Agent({
       pfx: certificado,
       passphrase: "",  // Se houver senha, insira aqui
@@ -145,13 +125,37 @@ app.post("/verificar-pagamento", async (req, res) => {
     const { idPagamento } = req.body;  // Aqui, você vai pegar o ID do pagamento enviado no corpo da requisição.
 
     // Adapte isso para fazer a verificação do pagamento de acordo com a API do seu provedor
+    const agent = new https.Agent({
+      pfx: certificado,
+      passphrase: "",  // Se houver senha, insira aqui
+    });
+
+    // Configuração do token
+    const configToken = {
+      method: "POST",
+      url: "https://pix.api.efipay.com.br/oauth/token",
+      headers: {
+        Authorization: "Basic " + auth,
+        "Content-Type": "application/json",
+      },
+      httpsAgent: agent,
+      data: JSON.stringify({ grant_type: "client_credentials" }),
+    };
+
+    const tokenResponse = await axios(configToken);
+    const token = tokenResponse.data.access_token;
+
+    // Log para verificar a resposta do token
+    console.log("Token de acesso recebido:", token);
+
     const configVerificarPagamento = {
       method: "GET",  // Aqui você usa GET para consultar o status do pagamento
       url: `https://pix.api.efipay.com.br/v2/pagamentos/${idPagamento}`, // A URL pode variar conforme o seu provedor
       headers: {
-        Authorization: `Bearer ${auth}`, // Use o token recebido anteriormente
+        Authorization: `Bearer ${token}`, // Use o token recebido anteriormente
         "Content-Type": "application/json",
       },
+      httpsAgent: agent,
     };
 
     // Aqui, fazemos a requisição à API para verificar o pagamento
@@ -169,6 +173,6 @@ app.post("/verificar-pagamento", async (req, res) => {
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+app.listen(PORT, () => 
+   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
