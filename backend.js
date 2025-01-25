@@ -64,7 +64,7 @@ async function gerarChavePix(valor) {
       data: JSON.stringify({
         calendario: { expiracao: 3600 },
         valor: { original: valor.toFixed(2) },
-        chave: req.body.chave || "default@pix.com", // Use a chave enviada pelo front-end ou uma chave padrão
+        chave: req.body.chave || "3467e73a-9b39-48eb-a9bd-466cafc5666e", // Use a chave enviada pelo front-end ou uma chave padrão
         solicitacaoPagador: "Pagamento de títulos",
       }),
     };
