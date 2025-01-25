@@ -17,7 +17,7 @@ var certificado = fs.readFileSync("./producao-680610-premio.p12");
 // Insira as credenciais do PIX
 var credenciais = {
   client_id: "Client_Id_5292a7850c8ba56c5d8d28c4d882bcd226203df5",
-  client_secret: "Client_Id_5292a7850c8ba56c5d8d28c4d882bcd226203df5",
+  client_secret: "Client_Secret_1827eaffaf296a8115b7995eca0a44ae34740d8a",
 };
 
 // Codificando as credenciais em base64
