@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Caminho do certificado .p12
-var certificado = fs.readFileSync("./homologacao-680610-premio.p12");
+var certificado = fs.readFileSync("./producao-680610-premio.p12");
 
 // Insira as credenciais do PIX
 var credenciais = {
