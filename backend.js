@@ -12,12 +12,12 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Caminho do certificado .p12
-var certificado = fs.readFileSync("./homologacao-680504-loja2.p12");
+var certificado = fs.readFileSync("./homologacao-680610-premio.p12");
 
 // Insira as credenciais do PIX
 var credenciais = {
-  client_id: "Client_Id_81ae6fbca0e6de8d8ce690690289bfd6e2e1d7bf",
-  client_secret: "Client_Secret_57bd0d434850d5d8c578e01df13750a1a3ced239",
+  client_id: "Client_Id_5292a7850c8ba56c5d8d28c4d882bcd226203df5",
+  client_secret: "Client_Id_5292a7850c8ba56c5d8d28c4d882bcd226203df5",
 };
 
 // Codificando as credenciais em base64
@@ -57,7 +57,7 @@ const fs = require('fs');
     // Configuração do token
     const configToken = {
       method: "POST",
-      url: "https://pix-h.api.efipay.com.br/oauth/token",
+      url: "https://pix.api.efipay.com.br/oauth/token",
       headers: {
         Authorization: "Basic " + auth,
         "Content-Type": "application/json",
@@ -75,7 +75,7 @@ const fs = require('fs');
     // Configurando a cobrança com o token obtido
     const configCob = {
       method: "POST",
-      url: "https://pix-h.api.efipay.com.br/v2/cob",
+      url: "https://pix.api.efipay.com.br/v2/cob",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -147,7 +147,7 @@ app.post("/verificar-pagamento", async (req, res) => {
     // Adapte isso para fazer a verificação do pagamento de acordo com a API do seu provedor
     const configVerificarPagamento = {
       method: "GET",  // Aqui você usa GET para consultar o status do pagamento
-      url: `https://pix-h.api.efipay.com.br/v2/pagamentos/${idPagamento}`, // A URL pode variar conforme o seu provedor
+      url: `https://pix.api.efipay.com.br/v2/pagamentos/${idPagamento}`, // A URL pode variar conforme o seu provedor
       headers: {
         Authorization: `Bearer ${auth}`, // Use o token recebido anteriormente
         "Content-Type": "application/json",
