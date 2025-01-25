@@ -915,6 +915,7 @@ window.addEventListener('load', function() {
 
   // Função para verificar se o telefone está salvo no localStorage
   function isPhoneSaved() {
+    console.log("Verificando se o telefone está salvo...");
     return localStorage.getItem('userPhone') !== null;
   }
 
@@ -927,15 +928,21 @@ window.addEventListener('load', function() {
 
   // Verificando se o telefone está salvo antes de permitir gerar a chave Pix
   calculateButton.addEventListener("click", async () => {
+    console.log("Botão de calcular clicado.");
+
     if (!isPhoneSaved()) {
       alert("Por favor, faça login informando seu número de telefone primeiro.");
+      console.log("Telefone não salvo. Interrompendo a execução.");
       return; // Impede a execução do restante da função se o telefone não estiver salvo
     }
 
     const pricePerNumber = 0.06;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
+    console.log("Total calculado para chave Pix:", totalAmount);
+
     try {
+      console.log("Enviando requisição para gerar chave Pix...");
       const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
         method: "POST",
         headers: {
@@ -945,24 +952,28 @@ window.addEventListener('load', function() {
       });
 
       const data = await response.json();
+      console.log("Resposta da geração da chave Pix:", data);
 
       if (data.pix) {
         pixKeyDiv.textContent = `${data.pix}`;
 
-if (data.location) {
-    qrCodeImage.src = data.location.startsWith('http') ? data.location : `https://${data.location}`;
-    pixQrCode.innerHTML = '';
-    pixQrCode.appendChild(qrCodeImage);
-} else {
-    pixQrCode.textContent = 'QR Code não disponível.';
-}
-
+        if (data.location) {
+          qrCodeImage.src = data.location.startsWith('http') ? data.location : `https://${data.location}`;
+          pixQrCode.innerHTML = '';
+          pixQrCode.appendChild(qrCodeImage);
+          console.log("QR Code gerado com sucesso.");
+        } else {
+          pixQrCode.textContent = 'QR Code não disponível.';
+          console.log("QR Code não disponível.");
+        }
 
         // Exibindo o botão "Copiar chave Pix"
         copyButton.style.display = "inline-block"; 
+        console.log("Botão de copiar chave Pix exibido.");
 
         // Verificação real de pagamento
         setInterval(async () => {
+          console.log("Verificando pagamento...");
           try {
             const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
               method: "POST",
@@ -973,6 +984,7 @@ if (data.location) {
             });
 
             const paymentStatusData = await paymentStatusResponse.json();
+            console.log("Status do pagamento:", paymentStatusData);
 
             if (paymentStatusData.status === "CONFIRMED") {
               console.log("Pagamento confirmado!");
@@ -998,9 +1010,11 @@ if (data.location) {
 
   if (copyButton) {
     copyButton.addEventListener('click', function() {
+      console.log("Botão de copiar clicado.");
       const pixKey = pixKeyDiv.textContent; // Obtém o texto da chave Pix
       navigator.clipboard.writeText(pixKey).then(function() {
         alert("Chave Pix copiada com sucesso!");
+        console.log("Chave Pix copiada com sucesso.");
       }).catch(function(err) {
         console.error("Erro ao copiar a chave Pix:", err);
       });
@@ -1010,10 +1024,12 @@ if (data.location) {
   }
 
   let totalValue = parseFloat(totalValueInput.value) || 1;
+  console.log("Valor total inicial:", totalValue);
 
   // Adicionando evento de clique para cada card
   cards.forEach(card => {
     card.addEventListener('click', () => {
+      console.log("Card clicado.");
       const selectedValue = parseFloat(card.getAttribute('data-value'));
       totalValue += selectedValue;
       totalValueInput.value = totalValue;
@@ -1026,10 +1042,12 @@ if (data.location) {
     const pricePerNumber = 0.06;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
+    console.log("Botão de calcular atualizado:", totalAmount);
   }
 
   // Evento para decrementar o valor
   decrementButton.addEventListener("click", () => {
+    console.log("Botão de decremento clicado.");
     if (totalValue > 1) {
       totalValue--;
       totalValueInput.value = totalValue;
@@ -1039,6 +1057,7 @@ if (data.location) {
 
   // Evento para incrementar o valor
   incrementButton.addEventListener("click", () => {
+    console.log("Botão de incremento clicado.");
     totalValue++;
     totalValueInput.value = totalValue;
     updateButton();
@@ -1046,6 +1065,7 @@ if (data.location) {
 
   // Atualiza o valor do botão sempre que o valor do input mudar
   totalValueInput.addEventListener("input", () => {
+    console.log("Valor do input alterado.");
     totalValue = parseFloat(totalValueInput.value) || 1;
     updateButton();
   });
@@ -1055,6 +1075,7 @@ if (data.location) {
 
   // Função para gerar os títulos
   function generateTitles(totalValue) {
+    console.log("Gerando títulos...");
     const titles = [];
     for (let i = 1; i <= totalValue; i++) {
       let titleNumber = i.toString().padStart(7, "0");
@@ -1063,11 +1084,10 @@ if (data.location) {
       }
       titles.push(`Título ${titleNumber}`);
     }
+    console.log("Títulos gerados:", titles);
     return titles;
   }
 </script>
-
-
 
 
 <br>
