@@ -132,7 +132,7 @@ app.post("/verificar-pagamento", async (req, res) => {
       method: "GET",
       url: `https://pix-h.api.efipay.com.br/v2/cob/${txid}`,
       headers: {
-        Authorization: `Bearer ${auth}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       httpsAgent: agent,
