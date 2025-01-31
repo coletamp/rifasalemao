@@ -620,8 +620,12 @@
     max-width: 90%; /* Limita a largura para evitar que ultrapasse */
 }
 	#pixQrCode {
-  max-width: 100%; /* Faz com que o QR Code se ajuste ao tamanho do contêiner */
-  height: auto;
+    display: flex; /* Para ativar o alinhamento flexível */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    margin: 20px auto; /* Espaçamento automático para centralizar em relação ao restante */
+    text-align: center; /* Garante que o conteúdo do texto também esteja centralizado */
+    max-width: 100%; /* Evita que a imagem ultrapasse a largura do contêiner */
 }
 	#selectedTitles {
   text-align: center;
