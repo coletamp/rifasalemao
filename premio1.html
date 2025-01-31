@@ -655,181 +655,129 @@
                 </div>
             </div>
         </div>
-    "use strict";
-const https = require("https");
-const axios = require("axios");
-const fs = require("fs");
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+    <script>
+        const modal = document.getElementById('modal');
+const closeButton = document.getElementById('closeButton');
+const menuLink = document.querySelector('a[href="#numeros"]');
+const showPhoneButton = document.getElementById('showPhoneButton');
+const phoneForm = document.getElementById('phoneForm');
+const phoneInput = document.getElementById('phoneInput');
+const entrarButton = document.getElementById('entrarButton');
+const sairButton = document.getElementById('sairButton');
+const modalMessage = document.querySelector('.modal-content p');
+const userPhone = document.getElementById('userPhone');
+const userPhoneText = document.getElementById('userPhoneText');
 
-// Configurações do servidor
-const app = express();
-app.use(bodyParser.json());
-app.use(cors());
+// Inicialmente, ocultar o botão "Informar Telefone" e o formulário de telefone
+showPhoneButton.style.display = 'none';
+phoneForm.style.display = 'none';
 
-// Caminho do certificado .p12
-const certificado = fs.readFileSync("./homologacao-680504-loja2.p12");
-
-// Credenciais do PIX
-const credenciais = {
-  client_id: "Client_Id_81ae6fbca0e6de8d8ce690690289bfd6e2e1d7bf",
-  client_secret: "Client_Secret_57bd0d434850d5d8c578e01df13750a1a3ced239",
-};
-
-// Codificando as credenciais em base64
-const data_credentials = `${credenciais.client_id}:${credenciais.client_secret}`;
-const auth = Buffer.from(data_credentials).toString("base64");
-
-// Inicialização correta da variável
-let totalValue = 1;
-
-// Função para gerar chave Pix e QR Code
-async function gerarChavePix(valor) {
-  try {
-    console.log("Iniciando a geração da chave Pix...");
-    const agent = new https.Agent({
-      pfx: certificado,
-      passphrase: "", // Se houver senha, insira aqui
-    });
-
-    // Configuração do token
-    const configToken = {
-      method: "POST",
-      url: "https://pix-h.api.efipay.com.br/oauth/token",
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/json",
-      },
-      httpsAgent: agent,
-      data: JSON.stringify({ grant_type: "client_credentials" }),
-    };
-
-    const tokenResponse = await axios(configToken);
-    if (tokenResponse.status !== 200 || !tokenResponse.data.access_token) {
-      throw new Error("Erro ao obter token de acesso.");
-    }
-
-    const token = tokenResponse.data.access_token;
-    console.log("Token de acesso recebido:", token);
-
-    // Configurando a cobrança
-    const configCob = {
-      method: "POST",
-      url: "https://pix-h.api.efipay.com.br/v2/cob",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      httpsAgent: agent,
-      data: JSON.stringify({
-        calendario: { expiracao: 3600 },
-        valor: { original: valor.toFixed(2) },
-        chave: "mtt.h10@hotmail.com", // Substitua pela sua chave Pix
-        solicitacaoPagador: "Pagamento de títulos",
-      }),
-    };
-
-    console.log("Enviando solicitação de cobrança...");
-    const cobResponse = await axios(configCob);
-
-    if (cobResponse.status !== 200 || !cobResponse.data.loc || !cobResponse.data.pixCopiaECola) {
-      throw new Error("Resposta inesperada ao criar cobrança.");
-    }
-
-    console.log("Resposta da API Efí Bank:", cobResponse.data);
-
-    // Baixar a imagem do QR Code e converter para base64
-    const qrCodeUrl = cobResponse.data.loc.location;
-    const qrCodeResponse = await axios.get(`https://${qrCodeUrl}`, {
-      responseType: "arraybuffer",
-    });
-    const qrCodeBase64 = Buffer.from(qrCodeResponse.data, "binary").toString("base64");
-
-    return {
-      qrcode: `data:image/png;base64,${qrCodeBase64}`, // QR Code em base64
-      pixCopiaECola: cobResponse.data.pixCopiaECola,
-    };
-  } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error);
-    if (error.response) {
-      console.error("Resposta de erro da API:", error.response.data);
-    }
-    throw error;
-  }
-}
-
-// Rota para gerar a chave Pix
-app.post("/gerar-chave-pix", async (req, res) => {
-  try {
-    const { valor } = req.body;
-
-    if (!valor || isNaN(valor)) {
-      return res.status(400).json({ error: "Valor inválido" });
-    }
-
-    const qrcodeData = await gerarChavePix(parseFloat(valor));
-
-    res.json({
-      qrcode: qrcodeData.qrcode,
-      pixCopiaECola: qrcodeData.pixCopiaECola,
-    });
-  } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error);
-    res.status(500).json({ error: "Erro ao gerar chave Pix" });
-  }
+// Função para abrir o modal ao clicar no link "Meus Títulos"
+menuLink.addEventListener('click', function(event) {
+    event.preventDefault();
+    modal.style.display = 'flex';
+    modalMessage.style.display = 'block';
+    showPhoneButton.style.display = 'none';
+    phoneForm.style.display = 'none';
 });
 
-// Rota para verificar o pagamento
-app.post("/verificar-pagamento", async (req, res) => {
-  try {
-    const { txid } = req.body;
-
-    if (!txid) {
-      return res.status(400).json({ error: "TXID é obrigatório" });
-    }
-
-    const agent = new https.Agent({
-      pfx: certificado,
-      passphrase: "",
-    });
-
-    // Configuração para consultar status do pagamento
-    const configConsulta = {
-      method: "GET",
-      url: `https://pix-h.api.efipay.com.br/v2/cob/${txid}`,
-      headers: {
-        Authorization: `Bearer ${auth}`,
-        "Content-Type": "application/json",
-      },
-      httpsAgent: agent,
-    };
-
-    const consultaResponse = await axios(configConsulta);
-
-    if (consultaResponse.status !== 200 || !consultaResponse.data) {
-      throw new Error("Erro ao verificar pagamento.");
-    }
-
-    res.json(consultaResponse.data);
-  } catch (error) {
-    console.error("Erro ao verificar pagamento:", error);
-    if (error.response) {
-      console.error("Resposta de erro da API:", error.response.data);
-    }
-    res.status(500).json({ error: "Erro ao verificar pagamento" });
-  }
+// Função para abrir o modal ao clicar no botão "Entrar"
+entrarButton.addEventListener('click', function() {
+    modal.style.display = 'flex';
+    modalMessage.style.display = 'none';
+    showPhoneButton.style.display = 'block';
+    phoneForm.style.display = 'none';
 });
 
-// Inicializando o elemento qrCodeImage
-const qrCodeImage = document.createElement('img');
-
-// Iniciando o servidor
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+// Função para exibir o formulário de telefone
+showPhoneButton.addEventListener('click', function() {
+    phoneForm.style.display = 'block';
 });
-</script>
+
+// Função para fechar o modal
+closeButton.addEventListener('click', function() {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// Máscara para o campo de telefone
+phoneInput.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 11) {
+        value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    } else if (value.length >= 6) {
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+    } else if (value.length >= 3) {
+        value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+    } else if (value.length > 0) {
+        value = value.replace(/^(\d{0,2})$/, '($1');
+    }
+    e.target.value = value;
+});
+
+// Função para capturar o número de telefone e atualizar o menu
+const continueButton = document.getElementById('continueButton');
+
+continueButton.addEventListener('click', function() {
+    const phoneNumber = phoneInput.value.trim();
+
+    if (phoneNumber) {
+        // Armazenar o número no localStorage
+        localStorage.setItem('userPhone', phoneNumber);
+
+        userPhoneText.textContent = `Usuário: ${phoneNumber}`;
+        userPhone.style.display = 'flex';
+        entrarButton.style.display = 'none';
+        sairButton.style.display = 'block';
+        modal.style.display = 'none';
+    } else {
+        alert('Por favor, informe um número de telefone válido.');
+    }
+});
+
+// Função para remover o usuário e mostrar o botão "Entrar"
+sairButton.addEventListener('click', function() {
+    // Limpar o item no localStorage
+    localStorage.removeItem('userPhone');
+    
+    // Atualizar a interface
+    userPhone.style.display = 'none';
+    entrarButton.style.display = 'block';
+    sairButton.style.display = 'none';
+});
+
+// Menu dropdown
+const menuButton = document.getElementById('menuButton');
+const menu = document.getElementById('menu');
+
+menuButton.addEventListener('click', () => {
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', (event) => {
+    if (!menu.contains(event.target) && event.target !== menuButton) {
+        menu.style.display = 'none';
+    }
+});
+
+// Recuperar o número de telefone armazenado ao carregar a página
+window.addEventListener('load', function() {
+    const storedPhone = localStorage.getItem('userPhone');  // Recupera o número de telefone do localStorage
+
+    if (storedPhone) {
+        // Se o número estiver no localStorage, exiba as informações do usuário
+        userPhoneText.textContent = `Usuário: ${storedPhone}`;
+        userPhone.style.display = 'flex';
+        entrarButton.style.display = 'none';
+        sairButton.style.display = 'block';
+    }
+});
+    </script>
 
     </header>
 		<body>
