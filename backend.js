@@ -73,14 +73,8 @@ async function gerarChavePix(valor) {
     console.log("Resposta da API Efí Bank:", cobResponse.data);
 
     // Baixar a imagem do QR Code e converter para base64
-    let qrCodeUrl = cobResponse.data.loc.location;
-
-    // Adicionar protocolo se estiver ausente
-    if (!qrCodeUrl.startsWith("http")) {
-      qrCodeUrl = `https://${qrCodeUrl}`;
-    }
-
-    const qrCodeResponse = await axios.get(qrCodeUrl, {
+    const qrCodeUrl = cobResponse.data.loc.location;
+    const qrCodeResponse = await axios.get(`https://${qrCodeUrl}`, {
       responseType: "arraybuffer",
     });
     const qrCodeBase64 = Buffer.from(qrCodeResponse.data, "binary").toString("base64");
@@ -93,11 +87,6 @@ async function gerarChavePix(valor) {
     console.error("Erro ao gerar chave Pix:", error);
     if (error.response) {
       console.error("Resposta de erro da API:", error.response.data);
-      return { error: error.response.data };
-    } else if (error.request) {
-      console.error("Nenhuma resposta da API foi recebida:", error.request);
-    } else {
-      console.error("Erro ao configurar a requisição:", error.message);
     }
     throw error;
   }
@@ -108,8 +97,8 @@ app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor } = req.body;
 
-    if (!valor || isNaN(valor) || valor <= 0) {
-      return res.status(400).json({ error: "Valor inválido. Deve ser maior que zero." });
+    if (!valor || isNaN(valor)) {
+      return res.status(400).json({ error: "Valor inválido" });
     }
 
     const qrcodeData = await gerarChavePix(parseFloat(valor));
@@ -120,11 +109,7 @@ app.post("/gerar-chave-pix", async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao gerar chave Pix:", error);
-    if (error.response) {
-      res.status(500).json({ error: error.response.data });
-    } else {
-      res.status(500).json({ error: "Erro interno no servidor" });
-    }
+    res.status(500).json({ error: "Erro ao gerar chave Pix" });
   }
 });
 
