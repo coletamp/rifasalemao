@@ -936,6 +936,25 @@ window.addEventListener('load', function() {
     console.log("Botão de calcular atualizado:", totalAmount);
   }
 
+  // Adicionar evento de clique para os cards
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      console.log("Card clicado.");
+
+      // Obter o valor do card clicado
+      const selectedValue = parseFloat(card.getAttribute('data-value')) || 0;
+
+      // Atualizar o valor total
+      totalValue += selectedValue;
+      totalValueInput.value = totalValue;
+      updateButton();
+
+      // Adicionar feedback visual
+      cards.forEach(c => c.classList.remove('selected')); // Remover seleção de outros cards
+      card.classList.add('selected'); // Adicionar classe ao card selecionado
+    });
+  });
+
   // Evento para decrementar o valor
   decrementButton.addEventListener("click", () => {
     console.log("Botão de decremento clicado.");
@@ -1065,6 +1084,7 @@ window.addEventListener('load', function() {
     });
   }
 </script>
+
 
 
 
