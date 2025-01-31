@@ -948,14 +948,14 @@ window.addEventListener('load', function() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ valor: Number(totalAmount) }),
+        body: JSON.stringify({ valor: totalAmount }),  // Passando totalAmount diretamente
       });
 
       const data = await response.json();
       console.log("Resposta da geração da chave Pix:", data);
 
       if (data.pixCopiaECola) {
-        pixKeyDiv.textContent = `${data.pixCopiaECola}`;
+        pixKeyDiv.textContent = `${data.pixCopiaECola}`;  // Exibindo chave Pix
 
         if (data.qrcode) {
           const qrCodeImage = document.createElement("img");
@@ -981,7 +981,7 @@ window.addEventListener('load', function() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ idPagamento: data.pix }),
+            body: JSON.stringify({ idPagamento: data.pix }),  // Usando ID do pagamento correto
           });
 
           const paymentStatusData = await paymentStatusResponse.json();
@@ -1085,6 +1085,7 @@ window.addEventListener('load', function() {
     return titles;
   }
 </script>
+
 
 <br>
 
