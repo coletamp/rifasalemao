@@ -948,7 +948,7 @@ window.addEventListener('load', function() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ valor: parseFloat(totalAmount) }),
+        body: JSON.stringify({ valor: Number(totalAmount) }),
       });
 
       const data = await response.json();
