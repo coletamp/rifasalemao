@@ -954,18 +954,19 @@ window.addEventListener('load', function() {
       const data = await response.json();
       console.log("Resposta da geração da chave Pix:", data);
 
-      if (data.pix) {
-        pixKeyDiv.textContent = `${data.pix}`;
+      if (data.pixCopiaECola) {
+  pixKeyDiv.textContent = `${data.pixCopiaECola}`;
 
-        if (data.location) {
-          qrCodeImage.src = data.location.startsWith('http') ? data.location : `https://${data.location}`;
-          pixQrCode.innerHTML = '';
-          pixQrCode.appendChild(qrCodeImage);
-          console.log("QR Code gerado com sucesso.");
-        } else {
-          pixQrCode.textContent = 'QR Code não disponível.';
-          console.log("QR Code não disponível.");
-        }
+        if (data.qrcode) {
+    const qrCodeImage = document.createElement("img");
+    qrCodeImage.src = data.qrcode;
+    pixQrCode.innerHTML = '';
+    pixQrCode.appendChild(qrCodeImage);
+    console.log("QR Code gerado com sucesso.");
+  } else {
+    pixQrCode.textContent = "QR Code não disponível.";
+  }
+}
 
         // Exibindo o botão "Copiar chave Pix"
         copyButton.style.display = "inline-block"; 
