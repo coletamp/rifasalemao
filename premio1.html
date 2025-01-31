@@ -955,54 +955,50 @@ window.addEventListener('load', function() {
       console.log("Resposta da geração da chave Pix:", data);
 
       if (data.pixCopiaECola) {
-  pixKeyDiv.textContent = `${data.pixCopiaECola}`;
+        pixKeyDiv.textContent = `${data.pixCopiaECola}`;
 
         if (data.qrcode) {
-    const qrCodeImage = document.createElement("img");
-    qrCodeImage.src = data.qrcode;
-    pixQrCode.innerHTML = '';
-    pixQrCode.appendChild(qrCodeImage);
-    console.log("QR Code gerado com sucesso.");
-  } else {
-    pixQrCode.textContent = "QR Code não disponível.";
-  }
-}
-
-        // Exibindo o botão "Copiar chave Pix"
-        copyButton.style.display = "inline-block"; 
-        console.log("Botão de copiar chave Pix exibido.");
-
-        // Verificação real de pagamento
-        setInterval(async () => {
-          console.log("Verificando pagamento...");
-          try {
-            const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ idPagamento: data.pix }),
-            });
-
-            const paymentStatusData = await paymentStatusResponse.json();
-            console.log("Status do pagamento:", paymentStatusData);
-
-            if (paymentStatusData.status === "CONFIRMED") {
-              console.log("Pagamento confirmado!");
-              const titles = generateTitles(totalValue);
-              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
-              selectedTitlesDiv.style.display = "block";  
-            } else {
-              console.log("Pagamento não confirmado.");
-            }
-          } catch (error) {
-            console.error("Erro ao verificar o pagamento:", error);
-          }
-        }, 5000); // A cada 5 segundos, verificando se o pagamento foi confirmado
-      } else {
-        console.log("Erro ao gerar chave Pix ou QR Code.");
-        pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
+          const qrCodeImage = document.createElement("img");
+          qrCodeImage.src = data.qrcode;
+          pixQrCode.innerHTML = '';
+          pixQrCode.appendChild(qrCodeImage);
+          console.log("QR Code gerado com sucesso.");
+        } else {
+          pixQrCode.textContent = "QR Code não disponível.";
+        }
       }
+
+      // Exibindo o botão "Copiar chave Pix"
+      copyButton.style.display = "inline-block"; 
+      console.log("Botão de copiar chave Pix exibido.");
+
+      // Verificação real de pagamento
+      setInterval(async () => {
+        console.log("Verificando pagamento...");
+        try {
+          const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ idPagamento: data.pix }),
+          });
+
+          const paymentStatusData = await paymentStatusResponse.json();
+          console.log("Status do pagamento:", paymentStatusData);
+
+          if (paymentStatusData.status === "CONFIRMED") {
+            console.log("Pagamento confirmado!");
+            const titles = generateTitles(totalValue);
+            selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
+            selectedTitlesDiv.style.display = "block";  
+          } else {
+            console.log("Pagamento não confirmado.");
+          }
+        } catch (error) {
+          console.error("Erro ao verificar o pagamento:", error);
+        }
+      }, 5000); // A cada 5 segundos, verificando se o pagamento foi confirmado
     } catch (error) {
       console.error("Erro ao conectar com o servidor:", error);
       pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
@@ -1089,7 +1085,6 @@ window.addEventListener('load', function() {
     return titles;
   }
 </script>
-
 
 <br>
 
