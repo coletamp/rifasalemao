@@ -869,25 +869,23 @@ window.addEventListener('load', function() {
         <div class="value">+800</div>
         <div class="label">SELECIONAR</div>
     </div>
-    <div class="card" data-value="1000">    
-        <div class="value">+1000</div>
-        <div class="label">SELECIONAR</div>
-    </div>
-</div>    
+    <div class="card" data-value="1000">
+    <div class="value">+1000</div>
+    <div class="label">SELECIONAR</div>
+</div>
 
-<!-- Campo para somar o valor -->
 <div class="footer-buttons">
-    <!-- Adicionando o id "totalValue" no campo de entrada -->
-      <button id="decrement">-</button>
-        <input id="totalValue" type="number" value="34" min="1">
-        <button id="increment">+</button>
-    </div>
-    <button id="calculateButton">Quero participar R$ 2,04</button>
-	<div id="pixQrCode"></div>
-	<div id="pixKey"></div>
-	<div id="selectedTitles"></div>
+    <button id="decrement">-</button>
+    <input id="totalValue" type="number" value="34" min="1">
+    <button id="increment">+</button>
+</div>
 
-	<div id="pix-container">
+<button id="calculateButton">Quero participar R$ 2,04</button>
+<div id="pixQrCode"></div>
+<div id="pixKey"></div>
+<div id="selectedTitles"></div>
+
+<div id="pix-container">
     <div id="pix-box">
         <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
     </div>
@@ -913,129 +911,12 @@ window.addEventListener('load', function() {
   const copyButton = document.getElementById('copy-pix-key-button');
   const cards = document.querySelectorAll('.card');
 
-  // Função para verificar se o telefone está salvo no localStorage
-  function isPhoneSaved() {
-    console.log("Verificando se o telefone está salvo...");
-    return localStorage.getItem('userPhone') !== null;
-  }
-
-  // Verificação de login (essa lógica pode ser adaptada conforme o seu sistema de login)
-  const isLoggedIn = false; // Substitua essa variável pela lógica de autenticação do seu sistema
-  const user = { // Exemplo de objeto do usuário autenticado (substitua com dados reais)
-    id: 1, 
-    name: 'Usuário Teste'
-  };
-
-  // Verificando se o telefone está salvo antes de permitir gerar a chave Pix
-  calculateButton.addEventListener("click", async () => {
-    console.log("Botão de calcular clicado.");
-
-    if (!isPhoneSaved()) {
-      alert("Por favor, faça login informando seu número de telefone primeiro.");
-      console.log("Telefone não salvo. Interrompendo a execução.");
-      return; // Impede a execução do restante da função se o telefone não estiver salvo
-    }
-
-    const pricePerNumber = 0.06;
-    const totalAmount = (totalValue * pricePerNumber).toFixed(2);
-
-    console.log("Total calculado para chave Pix:", totalAmount);
-
-    try {
-      console.log("Enviando requisição para gerar chave Pix...");
-      const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ valor: parseFloat(totalAmount) }),
-      });
-
-      const data = await response.json();
-      console.log("Resposta da geração da chave Pix:", data);
-
-      if (data.pix) {
-        pixKeyDiv.textContent = `${data.pix}`;
-
-        if (data.location) {
-          qrCodeImage.src = data.location.startsWith('http') ? data.location : `https://${data.location}`;
-          pixQrCode.innerHTML = '';
-          pixQrCode.appendChild(qrCodeImage);
-          console.log("QR Code gerado com sucesso.");
-        } else {
-          pixQrCode.textContent = 'QR Code não disponível.';
-          console.log("QR Code não disponível.");
-        }
-
-        // Exibindo o botão "Copiar chave Pix"
-        copyButton.style.display = "inline-block"; 
-        console.log("Botão de copiar chave Pix exibido.");
-
-        // Verificação real de pagamento
-        setInterval(async () => {
-          console.log("Verificando pagamento...");
-          try {
-            const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ "txid": data.pix }),
-            });
-
-            const paymentStatusData = await paymentStatusResponse.json();
-            console.log("Status do pagamento:", paymentStatusData);
-
-            if (paymentStatusData.status === "CONFIRMED") {
-              console.log("Pagamento confirmado!");
-              const titles = generateTitles(totalValue);
-              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
-              selectedTitlesDiv.style.display = "block";  
-            } else {
-              console.log("Pagamento não confirmado.");
-            }
-          } catch (error) {
-            console.error("Erro ao verificar o pagamento:", error);
-          }
-        }, 5000); // A cada 5 segundos, verificando se o pagamento foi confirmado
-      } else {
-        console.log("Erro ao gerar chave Pix ou QR Code.");
-        pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
-      }
-    } catch (error) {
-      console.error("Erro ao conectar com o servidor:", error);
-      pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
-    }
-  });
-
-  if (copyButton) {
-    copyButton.addEventListener('click', function() {
-      console.log("Botão de copiar clicado.");
-      const pixKey = pixKeyDiv.textContent; // Obtém o texto da chave Pix
-      navigator.clipboard.writeText(pixKey).then(function() {
-        alert("Chave Pix copiada com sucesso!");
-        console.log("Chave Pix copiada com sucesso.");
-      }).catch(function(err) {
-        console.error("Erro ao copiar a chave Pix:", err);
-      });
-    });
-  } else {
-    console.error("Elemento do botão não encontrado.");
-  }
-
   let totalValue = parseFloat(totalValueInput.value) || 1;
+
   console.log("Valor total inicial:", totalValue);
 
-  // Adicionando evento de clique para cada card
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      console.log("Card clicado.");
-      const selectedValue = parseFloat(card.getAttribute('data-value'));
-      totalValue += selectedValue;
-      totalValueInput.value = totalValue;
-      updateButton();
-    });
-  });
+  // Atualiza o botão inicialmente
+  updateButton();
 
   // Função para atualizar o botão com o valor correto
   function updateButton() {
@@ -1070,9 +951,6 @@ window.addEventListener('load', function() {
     updateButton();
   });
 
-  // Atualiza o botão inicialmente
-  updateButton();
-
   // Função para gerar os títulos
   function generateTitles(totalValue) {
     console.log("Gerando títulos...");
@@ -1087,7 +965,97 @@ window.addEventListener('load', function() {
     console.log("Títulos gerados:", titles);
     return titles;
   }
+
+  // Verificação de login e envio de requisição para gerar chave Pix
+  calculateButton.addEventListener("click", async () => {
+    console.log("Botão de calcular clicado.");
+
+    const pricePerNumber = 0.06;
+    const totalAmount = (totalValue * pricePerNumber).toFixed(2);
+
+    console.log("Total calculado para chave Pix:", totalAmount);
+
+    try {
+      console.log("Enviando requisição para gerar chave Pix...");
+      const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ valor: parseFloat(totalAmount) }),
+      });
+
+      const data = await response.json();
+      console.log("Resposta da geração da chave Pix:", data);
+
+      if (data.txid && data.qrcode && data.imagemQrcode) {
+        // Exibir a chave Pix
+        pixKeyDiv.textContent = `Chave Pix (Copia e Cola): ${data.qrcode}`;
+
+        // Exibir QR Code
+        const qrCodeImage = document.createElement("img");
+        qrCodeImage.src = data.imagemQrcode;
+        qrCodeImage.alt = "QR Code Pix";
+        pixQrCode.innerHTML = "";
+        pixQrCode.appendChild(qrCodeImage);
+        console.log("QR Code gerado com sucesso.");
+
+        // Exibir o botão para copiar a chave Pix
+        copyButton.style.display = "inline-block";
+        console.log("Botão de copiar chave Pix exibido.");
+
+        // Verificação do pagamento
+        setInterval(async () => {
+          console.log("Verificando pagamento...");
+          try {
+            const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ txid: data.txid }),
+            });
+
+            const paymentStatusData = await paymentStatusResponse.json();
+            console.log("Status do pagamento:", paymentStatusData);
+
+            if (paymentStatusData.status === "CONFIRMED") {
+              console.log("Pagamento confirmado!");
+              const titles = generateTitles(totalValue);
+              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
+              selectedTitlesDiv.style.display = "block";
+            } else {
+              console.log("Pagamento não confirmado.");
+            }
+          } catch (error) {
+            console.error("Erro ao verificar o pagamento:", error);
+          }
+        }, 5000);
+      } else {
+        console.log("Erro ao gerar chave Pix ou QR Code.");
+        pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
+      }
+    } catch (error) {
+      console.error("Erro ao conectar com o servidor:", error);
+      pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
+    }
+  });
+
+  // Evento para copiar a chave Pix
+  if (copyButton) {
+    copyButton.addEventListener('click', function () {
+      console.log("Botão de copiar clicado.");
+      const pixKey = pixKeyDiv.textContent;
+      navigator.clipboard.writeText(pixKey).then(function () {
+        alert("Chave Pix copiada com sucesso!");
+        console.log("Chave Pix copiada com sucesso.");
+      }).catch(function (err) {
+        console.error("Erro ao copiar a chave Pix:", err);
+      });
+    });
+  }
 </script>
+
 
 
 <br>
