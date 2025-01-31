@@ -87,13 +87,12 @@ async function gerarChavePix(valor) {
       qrcode: `data:image/png;base64,${qrCodeBase64}`, // QR Code em base64
       pixCopiaECola: cobResponse.data.pixCopiaECola,
     };
-  } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error);
-    if (error.response) {
-      console.error("Resposta de erro da API:", error.response.data);
-    }
-    throw error;
+  catch (error) {
+  console.error("Erro ao gerar chave Pix:", error);
+  if (error.response) {
+    console.error("Resposta de erro da API:", error.response.data);
   }
+  throw new Error("Erro ao gerar chave Pix");
 }
 
 // Rota para gerar a chave Pix
