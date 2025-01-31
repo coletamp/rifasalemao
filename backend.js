@@ -83,13 +83,18 @@ async function gerarChavePix(valor) {
       qrcode: `data:image/png;base64,${qrCodeBase64}`, // QR Code em base64
       pixCopiaECola: cobResponse.data.pixCopiaECola,
     };
-  } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error);
-    if (error.response) {
-      console.error("Resposta de erro da API:", error.response.data);
-    }
-    throw error;
+  catch (error) {
+  console.error("Erro ao gerar chave Pix:", error);
+  if (error.response) {
+    console.error("Resposta de erro da API:", error.response.data);
+    return { error: error.response.data };
+  } else if (error.request) {
+    console.error("Nenhuma resposta da API foi recebida:", error.request);
+  } else {
+    console.error("Erro ao configurar a requisição:", error.message);
   }
+  throw error;
+}
 }
 
 // Rota para gerar a chave Pix
@@ -97,10 +102,10 @@ app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor } = req.body;
 
-    if (!valor || isNaN(valor)) {
-      return res.status(400).json({ error: "Valor inválido" });
+    if (!valor || isNaN(valor) || valor <= 0) {
+      return res.status(400).json({ error: "Valor inválido. Deve ser maior que zero." });
     }
-
+    
     const qrcodeData = await gerarChavePix(parseFloat(valor));
 
     res.json({
@@ -109,7 +114,11 @@ app.post("/gerar-chave-pix", async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao gerar chave Pix:", error);
-    res.status(500).json({ error: "Erro ao gerar chave Pix" });
+    if (error.response) {
+      res.status(500).json({ error: error.response.data });
+    } else {
+      res.status(500).json({ error: "Erro interno no servidor" });
+    }
   }
 });
 
