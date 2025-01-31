@@ -73,7 +73,13 @@ async function gerarChavePix(valor) {
     console.log("Resposta da API Efí Bank:", cobResponse.data);
 
     // Baixar a imagem do QR Code e converter para base64
-    const qrCodeUrl = cobResponse.data.loc.location;
+    let qrCodeUrl = cobResponse.data.loc.location;
+
+    // Adicionar protocolo se estiver ausente
+    if (!qrCodeUrl.startsWith("http")) {
+      qrCodeUrl = `https://${qrCodeUrl}`;
+    }
+
     const qrCodeResponse = await axios.get(qrCodeUrl, {
       responseType: "arraybuffer",
     });
