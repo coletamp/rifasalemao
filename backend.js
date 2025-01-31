@@ -68,20 +68,26 @@ async function gerarChavePix(valor) {
     };
 
     console.log("Enviando solicitação de cobrança...");
-
     const cobResponse = await axios(configCob);
-    console.log("Resposta da API Efí Bank:", cobResponse.data);
+    const { txid, loc } = cobResponse.data;
 
-    // Baixar a imagem do QR Code e converter para base64
-    const qrCodeUrl = cobResponse.data.loc.location;
-    const qrCodeResponse = await axios.get(`https://${qrCodeUrl}`, {
-      responseType: "arraybuffer",
+    console.log("Cobrança criada com sucesso:", cobResponse.data);
+
+    // Validar a location e o QR Code
+    const qrCodeResponse = await axios.get(`https://pix-h.api.efipay.com.br/v2/loc/${loc.id}/qrcode`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      httpsAgent: agent,
     });
-    const qrCodeBase64 = Buffer.from(qrCodeResponse.data, "binary").toString("base64");
+
+    const { imagemQrcode, qrcode } = qrCodeResponse.data;
 
     return {
-      qrcode: `data:image/png;base64,${qrCodeBase64}`, // QR Code em base64
-      pixCopiaECola: cobResponse.data.pixCopiaECola,
+      txid,
+      qrcode,
+      imagemQrcode,
     };
   } catch (error) {
     console.error("Erro ao gerar chave Pix:", error);
@@ -104,8 +110,9 @@ app.post("/gerar-chave-pix", async (req, res) => {
     const qrcodeData = await gerarChavePix(parseFloat(valor));
 
     res.json({
+      txid: qrcodeData.txid,
       qrcode: qrcodeData.qrcode,
-      pixCopiaECola: qrcodeData.pixCopiaECola,
+      imagemQrcode: qrcodeData.imagemQrcode,
     });
   } catch (error) {
     console.error("Erro ao gerar chave Pix:", error);
