@@ -24,30 +24,34 @@ const credenciais = {
 const data_credentials = `${credenciais.client_id}:${credenciais.client_secret}`;
 const auth = Buffer.from(data_credentials).toString("base64");
 
+// Instância reutilizável de https.Agent
+const agent = new https.Agent({
+  pfx: certificado,
+  passphrase: "", // Se houver senha, insira aqui
+});
+
+// Função para obter token de autenticação
+async function obterToken() {
+  const configToken = {
+    method: "POST",
+    url: "https://pix-h.api.efipay.com.br/oauth/token",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/json",
+    },
+    httpsAgent: agent,
+    data: JSON.stringify({ grant_type: "client_credentials" }),
+  };
+
+  const tokenResponse = await axios(configToken);
+  return tokenResponse.data.access_token;
+}
+
 // Função para gerar chave Pix e QR Code
 async function gerarChavePix(valor) {
   try {
     console.log("Iniciando a geração da chave Pix...");
-    const agent = new https.Agent({
-      pfx: certificado,
-      passphrase: "", // Se houver senha, insira aqui
-    });
-
-    // Configuração do token
-    const configToken = {
-      method: "POST",
-      url: "https://pix-h.api.efipay.com.br/oauth/token",
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/json",
-      },
-      httpsAgent: agent,
-      data: JSON.stringify({ grant_type: "client_credentials" }),
-    };
-
-    const tokenResponse = await axios(configToken);
-    const token = tokenResponse.data.access_token;
-
+    const token = await obterToken();
     console.log("Token de acesso recebido:", token);
 
     // Configurando a cobrança
@@ -74,7 +78,7 @@ async function gerarChavePix(valor) {
 
     // Baixar a imagem do QR Code e converter para base64
     const qrCodeUrl = cobResponse.data.loc.location;
-    const qrCodeResponse = await axios.get(`https://${qrCodeUrl}`, {
+    const qrCodeResponse = await axios.get(qrCodeUrl, {
       responseType: "arraybuffer",
     });
     const qrCodeBase64 = Buffer.from(qrCodeResponse.data, "binary").toString("base64");
@@ -97,7 +101,7 @@ app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor } = req.body;
 
-    if (!valor || isNaN(valor)) {
+    if (!valor || isNaN(valor) || valor <= 0) {
       return res.status(400).json({ error: "Valor inválido" });
     }
 
@@ -122,10 +126,7 @@ app.post("/verificar-pagamento", async (req, res) => {
       return res.status(400).json({ error: "TXID é obrigatório" });
     }
 
-    const agent = new https.Agent({
-      pfx: certificado,
-      passphrase: "",
-    });
+    const token = await obterToken();
 
     // Configuração para consultar status do pagamento
     const configConsulta = {
