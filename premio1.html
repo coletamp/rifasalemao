@@ -980,7 +980,7 @@ window.addEventListener('load', function() {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ idPagamento: data.pix }),
+              body: JSON.stringify({ "txid": data.pix }),
             });
 
             const paymentStatusData = await paymentStatusResponse.json();
