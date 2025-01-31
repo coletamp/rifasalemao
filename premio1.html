@@ -869,23 +869,25 @@ window.addEventListener('load', function() {
         <div class="value">+800</div>
         <div class="label">SELECIONAR</div>
     </div>
-    <div class="card" data-value="1000">
-    <div class="value">+1000</div>
-    <div class="label">SELECIONAR</div>
-</div>
+    <div class="card" data-value="1000">    
+        <div class="value">+1000</div>
+        <div class="label">SELECIONAR</div>
+    </div>
+</div>    
 
+<!-- Campo para somar o valor -->
 <div class="footer-buttons">
-    <button id="decrement">-</button>
-    <input id="totalValue" type="number" value="34" min="1">
-    <button id="increment">+</button>
-</div>
+    <!-- Adicionando o id "totalValue" no campo de entrada -->
+      <button id="decrement">-</button>
+        <input id="totalValue" type="number" value="34" min="1">
+        <button id="increment">+</button>
+    </div>
+    <button id="calculateButton">Quero participar R$ 2,04</button>
+	<div id="pixQrCode"></div>
+	<div id="pixKey"></div>
+	<div id="selectedTitles"></div>
 
-<button id="calculateButton">Quero participar R$ 2,04</button>
-<div id="pixQrCode"></div>
-<div id="pixKey"></div>
-<div id="selectedTitles"></div>
-
-<div id="pix-container">
+	<div id="pix-container">
     <div id="pix-box">
         <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
     </div>
