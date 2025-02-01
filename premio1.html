@@ -929,8 +929,8 @@ window.addEventListener('load', function() {
 
   console.log("Valor total inicial:", totalValue);
 
-  // Simulação de verificação de login (alterar conforme seu sistema de autenticação)
-  let isLoggedIn = false; // Mudar para 'true' após login bem-sucedido
+  // Simulação de verificação de login, agora com verificação do número de telefone
+  let isLoggedIn = localStorage.getItem('phoneNumber') !== null;
 
   // Atualiza o botão inicialmente
   updateButton();
