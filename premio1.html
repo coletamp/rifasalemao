@@ -929,8 +929,8 @@ window.addEventListener('load', function() {
 
   console.log("Valor total inicial:", totalValue);
 
-  // Verificar se o número de telefone foi salvo no localStorage para definir login
-  let isLoggedIn = localStorage.getItem("phoneNumber") ? true : false; // Verifica se o número de telefone está no localStorage
+  // Simulação de verificação de login (alterar conforme seu sistema de autenticação)
+  let isLoggedIn = false; // Mudar para 'true' após login bem-sucedido
 
   // Atualiza o botão inicialmente
   updateButton();
@@ -1002,19 +1002,12 @@ window.addEventListener('load', function() {
     return titles;
   }
 
-  // Função para salvar o número de telefone no localStorage e atualizar o status de login
-  function savePhoneNumber(phoneNumber) {
-    localStorage.setItem("phoneNumber", phoneNumber);
-    isLoggedIn = true;  // Alterar o status de login para verdadeiro
-    console.log("Número de telefone salvo no localStorage e login atualizado.");
-  }
-
   // Verificação de login e envio de requisição para gerar chave Pix
   calculateButton.addEventListener("click", async () => {
     console.log("Botão de calcular clicado.");
 
     if (!isLoggedIn) {
-      alert("Você precisa fazer o login para continuar.");
+      alert("Você precisa fazer login para continuar.");
       return; // Impede a geração da chave Pix se não estiver logado
     }
 
@@ -1103,7 +1096,6 @@ window.addEventListener('load', function() {
     });
   }
 </script>
-
 
 <br>
 
