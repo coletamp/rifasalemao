@@ -929,12 +929,19 @@ window.addEventListener('load', function() {
 
   console.log("Valor total inicial:", totalValue);
 
-  // Simulação de verificação de login (alterar conforme seu sistema de autenticação)
-  let isLoggedIn = false; // Mudar para 'true' após login bem-sucedido
+  // Verificar se o número de telefone está salvo no localStorage
+let isLoggedIn = localStorage.getItem("userPhoneNumber") ? true : false;
 
   // Atualiza o botão inicialmente
   updateButton();
 
+	// Função para salvar o número de telefone no localStorage (quando o usuário inserir o número)
+function savePhoneNumber(phoneNumber) {
+  localStorage.setItem("userPhoneNumber", phoneNumber);
+  isLoggedIn = true; // Altera para 'true' assim que o número é salvo
+  console.log("Número de telefone salvo no localStorage.");
+}
+	
   // Função para atualizar o botão com o valor correto
   function updateButton() {
     const pricePerNumber = 0.06;
