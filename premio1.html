@@ -929,9 +929,15 @@ window.addEventListener('load', function() {
 
   console.log("Valor total inicial:", totalValue);
 
-  // Verificar se o número de telefone está salvo no localStorage
-  let phoneNumber = localStorage.getItem("phoneNumber");
-  let isLoggedIn = phoneNumber !== null;
+  // Verifica se o número de telefone está salvo no localStorage
+  let phoneNumber = localStorage.getItem('phoneNumber');
+  
+  // Se o número de telefone não estiver salvo, exige login
+  if (!phoneNumber) {
+    alert("Você precisa fazer login para continuar.");
+    // Aqui você pode redirecionar para a página de login, ou exibir uma interface de login
+    return; // Impede a execução do código abaixo
+  }
 
   // Atualiza o botão inicialmente
   updateButton();
@@ -942,9 +948,6 @@ window.addEventListener('load', function() {
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
     console.log("Botão de calcular atualizado:", totalAmount);
-
-    // Se não estiver logado, desabilita o botão
-    calculateButton.disabled = !isLoggedIn;
   }
 
   // Adicionar evento de clique para os cards
@@ -1010,9 +1013,10 @@ window.addEventListener('load', function() {
   calculateButton.addEventListener("click", async () => {
     console.log("Botão de calcular clicado.");
 
-    if (!isLoggedIn) {
+    // Se o número de telefone não estiver no localStorage, impede a geração da chave Pix
+    if (!phoneNumber) {
       alert("Você precisa fazer login para continuar.");
-      return; // Impede a geração da chave Pix se não estiver logado
+      return; // Impede a geração da chave Pix
     }
 
     const pricePerNumber = 0.06;
@@ -1100,6 +1104,7 @@ window.addEventListener('load', function() {
     });
   }
 </script>
+
 
 
 <br>
