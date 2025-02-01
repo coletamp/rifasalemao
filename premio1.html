@@ -929,19 +929,9 @@ window.addEventListener('load', function() {
 
   console.log("Valor total inicial:", totalValue);
 
-  // Verificar se o número de telefone está salvo no localStorage
-let isLoggedIn = localStorage.getItem("userPhoneNumber") ? true : false;
-
   // Atualiza o botão inicialmente
   updateButton();
 
-	// Função para salvar o número de telefone no localStorage (quando o usuário inserir o número)
-function savePhoneNumber(phoneNumber) {
-  localStorage.setItem("userPhoneNumber", phoneNumber);
-  isLoggedIn = true; // Altera para 'true' assim que o número é salvo
-  console.log("Número de telefone salvo no localStorage.");
-}
-	
   // Função para atualizar o botão com o valor correto
   function updateButton() {
     const pricePerNumber = 0.06;
@@ -1009,14 +999,9 @@ function savePhoneNumber(phoneNumber) {
     return titles;
   }
 
-  // Verificação de login e envio de requisição para gerar chave Pix
+  // Envio de requisição para gerar chave Pix
   calculateButton.addEventListener("click", async () => {
     console.log("Botão de calcular clicado.");
-
-    if (!isLoggedIn) {
-      alert("Você precisa fazer login para continuar.");
-      return; // Impede a geração da chave Pix se não estiver logado
-    }
 
     const pricePerNumber = 0.06;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
@@ -1103,6 +1088,7 @@ function savePhoneNumber(phoneNumber) {
     });
   }
 </script>
+
 
 <br>
 
