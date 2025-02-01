@@ -942,139 +942,174 @@
 </div>
 
 <script>
-    const modal = document.getElementById('modal');
-    const closeButton = document.getElementById('closeButton');
-    const menuLink = document.querySelector('a[href="#numeros"]');
-    const showPhoneButton = document.getElementById('showPhoneButton');
-    const phoneForm = document.getElementById('phoneForm');
-    const phoneInput = document.getElementById('phoneInput');
-    const entrarButton = document.getElementById('entrarButton');
-    const sairButton = document.getElementById('sairButton');
-    const modalMessage = document.querySelector('.modal-content p');
-    const userPhone = document.getElementById('userPhone');
-    const userPhoneText = document.getElementById('userPhoneText');
-    const generatePixKeyButton = document.getElementById('calculateButton');
-    const pixKeyDiv = document.getElementById('pixKey'); // Declarado apenas uma vez
-    const pixQrCode = document.getElementById('pixQrCode');
-    const copyButton = document.getElementById('copy-pix-key-button');
+    window.addEventListener('load', function () {
+        const modal = document.getElementById('modal');
+        const closeButton = document.getElementById('closeButton');
+        const menuLink = document.querySelector('a[href="#numeros"]');
+        const showPhoneButton = document.getElementById('showPhoneButton');
+        const phoneForm = document.getElementById('phoneForm');
+        const phoneInput = document.getElementById('phoneInput');
+        const entrarButton = document.getElementById('entrarButton');
+        const sairButton = document.getElementById('sairButton');
+        const modalMessage = document.querySelector('.modal-content p');
+        const userPhone = document.getElementById('userPhone');
+        const userPhoneText = document.getElementById('userPhoneText');
+        const generatePixKeyButton = document.getElementById('calculateButton');
+        const pixKeyDiv = document.getElementById('pixKey');
+        const pixQrCode = document.getElementById('pixQrCode');
+        const copyButton = document.getElementById('copy-pix-key-button');
+        const continueButton = document.getElementById('continueButton');
+        const menuButton = document.getElementById('menuButton');
+        const menu = document.getElementById('menu');
 
-    if (showPhoneButton) showPhoneButton.style.display = 'none';
-    if (phoneForm) phoneForm.style.display = 'none';
-
-    menuLink?.addEventListener('click', function (event) {
-        event.preventDefault();
-        if (modal) modal.style.display = 'flex';
-        if (modalMessage) modalMessage.style.display = 'block';
+        // Inicializa visibilidade dos elementos
         if (showPhoneButton) showPhoneButton.style.display = 'none';
         if (phoneForm) phoneForm.style.display = 'none';
-    });
 
-    entrarButton?.addEventListener('click', function () {
-        if (modal) modal.style.display = 'flex';
-        if (modalMessage) modalMessage.style.display = 'none';
-        if (showPhoneButton) showPhoneButton.style.display = 'block';
-        if (phoneForm) phoneForm.style.display = 'none';
-    });
-
-    showPhoneButton?.addEventListener('click', function () {
-        if (phoneForm) phoneForm.style.display = 'block';
-    });
-
-    closeButton?.addEventListener('click', function () {
-        if (modal) modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            if (modal) modal.style.display = 'none';
+        // Adiciona evento para abrir modal ao clicar no menu
+        if (menuLink) {
+            menuLink.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (modal) modal.style.display = 'flex';
+                if (modalMessage) modalMessage.style.display = 'block';
+                if (showPhoneButton) showPhoneButton.style.display = 'none';
+                if (phoneForm) phoneForm.style.display = 'none';
+            });
         }
-    });
 
-    phoneInput?.addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length >= 11) {
-            value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-        } else if (value.length >= 6) {
-            value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
-        } else if (value.length >= 3) {
-            value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
-        } else if (value.length > 0) {
-            value = value.replace(/^(\d{0,2})$/, '($1');
+        // Evento para abrir modal de login
+        if (entrarButton) {
+            entrarButton.addEventListener('click', function () {
+                if (modal) modal.style.display = 'flex';
+                if (modalMessage) modalMessage.style.display = 'none';
+                if (showPhoneButton) showPhoneButton.style.display = 'block';
+                if (phoneForm) phoneForm.style.display = 'none';
+            });
         }
-        e.target.value = value;
-    });
 
-    const continueButton = document.getElementById('continueButton');
-    continueButton?.addEventListener('click', function () {
-        const phoneNumber = phoneInput?.value.trim();
-
-        if (phoneNumber) {
-            localStorage.setItem('userPhone', phoneNumber);
-
-            if (userPhoneText) userPhoneText.textContent = `Usuário: ${phoneNumber}`;
-            if (userPhone) userPhone.style.display = 'flex';
-            if (entrarButton) entrarButton.style.display = 'none';
-            if (sairButton) sairButton.style.display = 'block';
-            if (modal) modal.style.display = 'none';
-        } else {
-            alert('Por favor, informe um número de telefone válido.');
+        // Evento para mostrar o formulário de telefone
+        if (showPhoneButton) {
+            showPhoneButton.addEventListener('click', function () {
+                if (phoneForm) phoneForm.style.display = 'block';
+            });
         }
-    });
 
-    sairButton?.addEventListener('click', function () {
-        localStorage.removeItem('userPhone');
-
-        if (userPhone) userPhone.style.display = 'none';
-        if (entrarButton) entrarButton.style.display = 'block';
-        if (sairButton) sairButton.style.display = 'none';
-    });
-
-    const menuButton = document.getElementById('menuButton');
-    const menu = document.getElementById('menu');
-
-    menuButton?.addEventListener('click', () => {
-        if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    });
-
-    document.addEventListener('click', (event) => {
-        if (menu && !menu.contains(event.target) && event.target !== menuButton) {
-            menu.style.display = 'none';
+        // Evento para fechar modal
+        if (closeButton) {
+            closeButton.addEventListener('click', function () {
+                if (modal) modal.style.display = 'none';
+            });
         }
-    });
 
-    window.addEventListener('load', function () {
+        // Evento de click fora do modal para fechar
+        if (modal) {
+            window.addEventListener('click', function (event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Máscara de telefone
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 11) {
+                    value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+                } else if (value.length >= 6) {
+                    value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+                } else if (value.length >= 3) {
+                    value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+                } else if (value.length > 0) {
+                    value = value.replace(/^(\d{0,2})$/, '($1');
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Evento do botão de continuar
+        if (continueButton) {
+            continueButton.addEventListener('click', function () {
+                const phoneNumber = phoneInput?.value.trim();
+
+                if (phoneNumber) {
+                    localStorage.setItem('userPhone', phoneNumber);
+
+                    if (userPhoneText) userPhoneText.textContent = `Usuário: ${phoneNumber}`;
+                    if (userPhone) userPhone.style.display = 'flex';
+                    if (entrarButton) entrarButton.style.display = 'none';
+                    if (sairButton) sairButton.style.display = 'block';
+                    if (modal) modal.style.display = 'none';
+                } else {
+                    alert('Por favor, informe um número de telefone válido.');
+                }
+            });
+        }
+
+        // Evento para sair do login
+        if (sairButton) {
+            sairButton.addEventListener('click', function () {
+                localStorage.removeItem('userPhone');
+
+                if (userPhone) userPhone.style.display = 'none';
+                if (entrarButton) entrarButton.style.display = 'block';
+                if (sairButton) sairButton.style.display = 'none';
+            });
+        }
+
+        // Exibe ou esconde o menu
+        if (menuButton && menu) {
+            menuButton.addEventListener('click', () => {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        }
+
+        // Fecha o menu se clicar fora dele
+        if (menu) {
+            document.addEventListener('click', (event) => {
+                if (!menu.contains(event.target) && event.target !== menuButton) {
+                    menu.style.display = 'none';
+                }
+            });
+        }
+
+        // Carrega o telefone do localStorage ao carregar a página
         const storedPhone = localStorage.getItem('userPhone');
-
         if (storedPhone) {
             if (userPhoneText) userPhoneText.textContent = `Usuário: ${storedPhone}`;
             if (userPhone) userPhone.style.display = 'flex';
             if (entrarButton) entrarButton.style.display = 'none';
             if (sairButton) sairButton.style.display = 'block';
         }
-    });
 
-    generatePixKeyButton?.addEventListener('click', function () {
-        const storedPhone = localStorage.getItem('userPhone');
+        // Geração da chave Pix
+        if (generatePixKeyButton) {
+            generatePixKeyButton.addEventListener('click', function () {
+                if (!storedPhone) {
+                    alert('Você precisa fazer login com seu número de celular para gerar a chave Pix.');
+                    return;
+                }
 
-        if (!storedPhone) {
-            alert('Você precisa fazer login com seu número de celular para gerar a chave Pix.');
-            return;
+                if (pixKeyDiv) pixKeyDiv.textContent = 'Chave Pix gerada com sucesso!';
+                if (pixQrCode) pixQrCode.innerHTML = '<img src="https://via.placeholder.com/150" alt="QR Code Pix">';
+                if (copyButton) copyButton.style.display = 'inline-block';
+            });
         }
 
-        pixKeyDiv?.textContent = 'Chave Pix gerada com sucesso!';
-        if (pixQrCode) pixQrCode.innerHTML = '<img src="https://via.placeholder.com/150" alt="QR Code Pix">';
-        if (copyButton) copyButton.style.display = 'inline-block';
-    });
-
-    copyButton?.addEventListener('click', function () {
-        const pixKey = pixKeyDiv?.textContent;
-        if (pixKey) {
-            navigator.clipboard.writeText(pixKey)
-                .then(() => alert('Chave Pix copiada com sucesso!'))
-                .catch(err => console.error('Erro ao copiar a chave Pix:', err));
+        // Copia a chave Pix para a área de transferência
+        if (copyButton) {
+            copyButton.addEventListener('click', function () {
+                const pixKey = pixKeyDiv?.textContent;
+                if (pixKey) {
+                    navigator.clipboard.writeText(pixKey)
+                        .then(() => alert('Chave Pix copiada com sucesso!'))
+                        .catch(err => console.error('Erro ao copiar a chave Pix:', err));
+                }
+            });
         }
     });
 </script>
+
 
 
 <br>
