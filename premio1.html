@@ -929,8 +929,9 @@ window.addEventListener('load', function() {
 
   console.log("Valor total inicial:", totalValue);
 
-  // Simulação de verificação de login (alterar conforme seu sistema de autenticação)
-  let isLoggedIn = false; // Mudar para 'true' após login bem-sucedido
+  // Verificar se o número de telefone está salvo no localStorage
+  let phoneNumber = localStorage.getItem("phoneNumber");
+  let isLoggedIn = phoneNumber !== null;
 
   // Atualiza o botão inicialmente
   updateButton();
@@ -941,6 +942,9 @@ window.addEventListener('load', function() {
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
     console.log("Botão de calcular atualizado:", totalAmount);
+
+    // Se não estiver logado, desabilita o botão
+    calculateButton.disabled = !isLoggedIn;
   }
 
   // Adicionar evento de clique para os cards
@@ -1096,6 +1100,7 @@ window.addEventListener('load', function() {
     });
   }
 </script>
+
 
 <br>
 
