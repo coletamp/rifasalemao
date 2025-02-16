@@ -32,9 +32,10 @@ async function gerarChavePix(valor) {
       },
     };
 
-    console.log("Payload enviado para o Mercado Pago:", payload);
+    console.log("Payload preparado:", JSON.stringify(payload, null, 2));
 
     // Fazendo a requisição ao Mercado Pago
+    console.log("Enviando requisição para a API do Mercado Pago...");
     const response = await axios.post(
       "https://api.mercadopago.com/v1/payments",
       payload,
@@ -45,6 +46,7 @@ async function gerarChavePix(valor) {
         },
       }
     );
+    console.log("Resposta recebida da API do Mercado Pago:", JSON.stringify(response.data, null, 2));
 
     // Verificando a resposta
     if (response.data?.point_of_interaction?.transaction_data?.qr_code) {
@@ -55,6 +57,7 @@ async function gerarChavePix(valor) {
         qr_code_base64: pixData.qr_code_base64,
       };
     } else {
+      console.error("Resposta inválida da API do Mercado Pago:", response.data);
       throw new Error("Resposta inválida da API do Mercado Pago");
     }
   } catch (error) {
@@ -65,24 +68,27 @@ async function gerarChavePix(valor) {
 
 // Rota para gerar a chave Pix
 app.post("/gerar-chave-pix", async (req, res) => {
+  console.log("Recebendo requisição na rota /gerar-chave-pix...");
   try {
     const { valor } = req.body;
 
-    console.log("Valor recebido:", valor); // Adicionado para depuração
+    console.log("Corpo da requisição recebido:", JSON.stringify(req.body, null, 2));
 
     if (!valor || isNaN(valor)) {
+      console.error("Valor inválido recebido:", valor);
       return res.status(400).json({ error: "Valor inválido" });
     }
 
     const pixData = await gerarChavePix(valor);
-    
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Adicionando o cabeçalho CORS
+
+    console.log("Enviando resposta para o cliente...");
+    res.setHeader("Access-Control-Allow-Origin", "*"); // Adicionando o cabeçalho CORS
     res.json({
       qr_code: pixData.qr_code,
       qr_code_base64: pixData.qr_code_base64,
     });
   } catch (error) {
-    console.error("Erro interno:", error); // Mais detalhes sobre o erro
+    console.error("Erro interno ao processar a requisição:", error);
     res.status(500).json({ error: "Erro ao gerar chave Pix", details: error.message });
   }
 });
