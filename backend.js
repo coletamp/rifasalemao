@@ -1,44 +1,49 @@
 const express = require('express');
-const axios = require('axios');
-const bodyParser = require('body-parser');
-
+const mercadopago = require('mercadopago');
 const app = express();
-app.use(bodyParser.json());
+
+app.use(express.json());
+
+// Configura as credenciais do Mercado Pago
+mercadopago.configure({
+  access_token: 'SEU_ACCESS_TOKEN'
+});
 
 // Endpoint para gerar a chave Pix
 app.post('/gerar-chave-pix', async (req, res) => {
-  const { valor, descricao, email } = req.body;
+  const { valor } = req.body; // Obtém o valor enviado pelo front-end
+
+  // Dados do pagamento via Pix
+  const paymentData = {
+    transaction_amount: parseFloat(valor), // Valor da transação
+    payment_method_id: 'pix', // Método de pagamento Pix
+    payer: {
+      email: 'email_do_comprador@example.com', // E-mail do pagador
+      first_name: 'Nome', // Nome do pagador
+      last_name: 'Sobrenome', // Sobrenome do pagador
+      identification: {
+        type: 'CPF', // Tipo de documento
+        number: '12345678909' // Número do CPF
+      }
+    }
+  };
 
   try {
-    // Requisição para a API do Mercado Pago
-    const response = await axios.post('https://api.mercadopago.com/v1/payments', {
-      transaction_amount: parseFloat(valor),
-      description: descricao,
-      payment_method_id: 'pix',
-      payer: {
-        email: email,
-      }
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer SEU_ACCESS_TOKEN`
-      }
-    });
-
-    // Retorna os dados relevantes para o front-end
+    // Cria o pagamento via Pix
+    const payment = await mercadopago.payment.create(paymentData);
+    // Retorna os dados do pagamento, incluindo o QR Code
     res.json({
-      id: response.data.id,
-      qr_code: response.data.point_of_interaction.transaction_data.qr_code,
-      qr_code_base64: response.data.point_of_interaction.transaction_data.qr_code_base64
+      txid: payment.body.id, // ID da transação
+      qrcode: payment.body.point_of_interaction.transaction_data.qr_code, // QR Code em formato texto
+      imagemQrcode: payment.body.point_of_interaction.transaction_data.qr_code_base64 // QR Code em formato de imagem
     });
   } catch (error) {
-    console.error('Erro ao criar pagamento Pix:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Erro ao criar pagamento Pix' });
+    console.error('Erro ao criar pagamento:', error);
+    res.status(500).json({ error: 'Erro ao criar pagamento' }); // Retorna erro caso a criação do pagamento falhe
   }
 });
 
 // Inicia o servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(3000, () => {
+  console.log('Servidor rodando na porta 3000');
 });
