@@ -23,6 +23,7 @@ async function gerarChavePix(valor) {
       headers: {
         Authorization: `Bearer ${ACCESS_TOKEN}`,
         "Content-Type": "application/json",
+        "X-Idempotency-Key": `unique-key-${Date.now()}`, // Adicionado cabeçalho com valor único
       },
       data: {
         transaction_amount: valor,
@@ -51,11 +52,8 @@ async function gerarChavePix(valor) {
       imagemQrcode: point_of_interaction.transaction_data.qr_code_base64,
     };
   } catch (error) {
-    console.error("Erro ao gerar chave Pix:");
-    // Exibe mais informações detalhadas sobre o erro
-    console.error("Mensagem de erro:", error.message);
-    console.error("Dados da resposta de erro:", error.response?.data);
-    throw error; // Lança o erro para que ele seja tratado mais adiante
+    console.error("Erro ao gerar chave Pix:", error.response?.data || error.message);
+    throw error;
   }
 }
 
@@ -78,10 +76,8 @@ async function verificarPagamento(txid) {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao verificar pagamento:");
-    console.error("Mensagem de erro:", error.message);
-    console.error("Dados da resposta de erro:", error.response?.data);
-    throw error; // Lança o erro para que ele seja tratado mais adiante
+    console.error("Erro ao verificar pagamento:", error.response?.data || error.message);
+    throw error;
   }
 }
 
@@ -102,9 +98,6 @@ app.post("/gerar-chave-pix", async (req, res) => {
       imagemQrcode: qrcodeData.imagemQrcode,
     });
   } catch (error) {
-    console.error("Erro ao gerar chave Pix na rota:");
-    console.error("Mensagem de erro:", error.message);
-    console.error("Dados da resposta de erro:", error.response?.data);
     res.status(500).json({ error: "Erro ao gerar chave Pix", detalhes: error.response?.data || error.message });
   }
 });
@@ -121,9 +114,6 @@ app.post("/verificar-pagamento", async (req, res) => {
     const pagamento = await verificarPagamento(txid);
     res.json(pagamento);
   } catch (error) {
-    console.error("Erro ao verificar pagamento na rota:");
-    console.error("Mensagem de erro:", error.message);
-    console.error("Dados da resposta de erro:", error.response?.data);
     res.status(500).json({ error: "Erro ao verificar pagamento", detalhes: error.response?.data || error.message });
   }
 });
