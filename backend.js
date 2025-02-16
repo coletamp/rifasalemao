@@ -7,7 +7,7 @@ const cors = require("cors");
 // Configurações do servidor
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors());  // Habilita CORS para todas as origens
 
 // Credenciais do Mercado Pago
 const MP_ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
@@ -42,15 +42,19 @@ async function gerarChavePix(valor) {
       }
     );
 
-    const paymentData = response.data;
-    const pixData = paymentData.point_of_interaction.transaction_data;
+    // Verificando a resposta do Mercado Pago
+    if (response.data?.point_of_interaction?.transaction_data?.qr_code) {
+      const pixData = response.data.point_of_interaction.transaction_data;
 
-    console.log("Chave Pix gerada com sucesso:", pixData.qr_code);
+      console.log("Chave Pix gerada com sucesso:", pixData.qr_code);
 
-    return {
-      qr_code: pixData.qr_code,
-      qr_code_base64: pixData.qr_code_base64,
-    };
+      return {
+        qr_code: pixData.qr_code,
+        qr_code_base64: pixData.qr_code_base64,
+      };
+    } else {
+      throw new Error("Resposta inválida da API do Mercado Pago");
+    }
   } catch (error) {
     console.error("Erro ao gerar chave Pix:", error.response?.data || error.message);
     throw error;
@@ -67,12 +71,15 @@ app.post("/gerar-chave-pix", async (req, res) => {
     }
 
     const pixData = await gerarChavePix(valor);
+    
+    // Garantindo que o CORS seja corretamente configurado na resposta
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Permite todas as origens
     res.json({
       qr_code: pixData.qr_code,
       qr_code_base64: pixData.qr_code_base64,
     });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao gerar chave Pix" });
+    res.status(500).json({ error: "Erro ao gerar chave Pix", details: error.message });
   }
 });
 
