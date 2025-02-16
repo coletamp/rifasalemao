@@ -1027,14 +1027,31 @@ window.addEventListener('load', function() {
     console.log("Total calculado para chave Pix:", totalAmount);
 
     try {
-      console.log("Enviando requisição para gerar chave Pix...");
-      const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ valor: parseFloat(totalAmount) }),
-      });
+  console.log("Enviando requisição para gerar chave Pix...");
+  
+  // Gerar uma chave única para o cabeçalho X-Idempotency-Key
+  const idempotencyKey = crypto.randomUUID(); // Certifique-se de que o navegador suporta isso (ES2021+)
+
+  const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Idempotency-Key": idempotencyKey, // Adiciona o cabeçalho exigido pelo servidor
+    },
+    body: JSON.stringify({ valor: parseFloat(totalAmount) }),
+  });
+
+  // Processar a resposta
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("Erro ao gerar chave Pix:", errorData);
+  } else {
+    const data = await response.json();
+    console.log("Chave Pix gerada com sucesso:", data);
+  }
+} catch (error) {
+  console.error("Erro ao enviar requisição:", error);
+}
 
       const data = await response.json();
       console.log("Resposta da geração da chave Pix:", data);
