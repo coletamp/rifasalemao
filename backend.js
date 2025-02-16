@@ -4,6 +4,7 @@ const express = require("express");
 const axios = require("axios");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const { v4: uuidv4 } = require("uuid"); // Biblioteca para gerar UUID
 
 // Configurações do servidor
 const app = express();
@@ -35,6 +36,10 @@ async function gerarChavePix(valor) {
 
     console.log("Payload enviado para o Mercado Pago:", JSON.stringify(payload, null, 2));
 
+    // Gerando uma chave única para o header X-Idempotency-Key
+    const idempotencyKey = uuidv4();
+    console.log("X-Idempotency-Key gerado:", idempotencyKey);
+
     // Fazendo a requisição ao Mercado Pago
     const response = await axios.post(
       "https://api.mercadopago.com/v1/payments",
@@ -43,6 +48,7 @@ async function gerarChavePix(valor) {
         headers: {
           Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
+          "X-Idempotency-Key": idempotencyKey, // Adicionando o header necessário
         },
       }
     );
