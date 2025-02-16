@@ -19,23 +19,39 @@ async function gerarChavePix(valor) {
 
     const config = {
       method: "POST",
-      url: "https://api.mercadopago.com/v1/payments",
+      url: "https://api.mercadopago.com/v1/transaction-intents/process",
       headers: {
         Authorization: `Bearer ${ACCESS_TOKEN}`,
         "Content-Type": "application/json",
         "X-Idempotency-Key": `unique-key-${Date.now()}`, // Chave única
       },
       data: {
-        transaction_amount: valor,
-        description: "Pagamento via Pix",
-        payment_method_id: "pix",
-        payer: {
-          email: "default@exemplo.com", // E-mail genérico
-          first_name: "Cliente",        // Nome genérico
-          last_name: "Anonimo",         // Sobrenome genérico
-          identification: {
-            type: "CPF",
-            number: "00000000000",     // CPF genérico
+        external_reference: `MP-${Date.now()}`,
+        point_of_interaction: {
+          type: "PSP_TRANSFER",
+        },
+        seller_configuration: {
+          notification_url: "https://sua-url-de-notificacao.com",
+        },
+        transaction: {
+          from: {
+            accounts: [
+              {
+                amount: valor,
+              },
+            ],
+          },
+          to: {
+            accounts: [
+              {
+                type: "current",
+                amount: valor,
+                chave: {
+                  type: "CPF", // Tipo de chave Pix
+                  value: "00000000000", // CPF genérico
+                },
+              },
+            ],
           },
         },
       },
@@ -48,8 +64,8 @@ async function gerarChavePix(valor) {
 
     return {
       txid: id,
-      qrcode: point_of_interaction.transaction_data.qr_code,
-      imagemQrcode: point_of_interaction.transaction_data.qr_code_base64,
+      qrcode: point_of_interaction.qr_code,
+      imagemQrcode: point_of_interaction.qr_code_base64,
     };
   } catch (error) {
     console.error("Erro ao gerar chave Pix:", error.response ? error.response.data : error.message);
