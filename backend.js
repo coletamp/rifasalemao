@@ -23,7 +23,7 @@ async function gerarChavePix(valor) {
       headers: {
         Authorization: `Bearer ${ACCESS_TOKEN}`,
         "Content-Type": "application/json",
-        "X-Idempotency-Key": `unique-key-${Date.now()}`, // Adicionado cabeçalho com valor único
+        "X-Idempotency-Key": `unique-key-${Date.now()}`, // Chave única
       },
       data: {
         transaction_amount: valor,
@@ -52,7 +52,7 @@ async function gerarChavePix(valor) {
       imagemQrcode: point_of_interaction.transaction_data.qr_code_base64,
     };
   } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error.response?.data || error.message);
+    console.error("Erro ao gerar chave Pix:", error.response ? error.response.data : error.message);
     throw error;
   }
 }
@@ -76,7 +76,7 @@ async function verificarPagamento(txid) {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao verificar pagamento:", error.response?.data || error.message);
+    console.error("Erro ao verificar pagamento:", error.response ? error.response.data : error.message);
     throw error;
   }
 }
@@ -86,8 +86,9 @@ app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor } = req.body;
 
-    if (!valor || isNaN(valor)) {
-      return res.status(400).json({ error: "Valor inválido" });
+    // Verifica se o valor é válido
+    if (!valor || isNaN(valor) || valor <= 0) {
+      return res.status(400).json({ error: "Valor inválido. O valor deve ser um número maior que 0." });
     }
 
     const qrcodeData = await gerarChavePix(parseFloat(valor));
@@ -98,7 +99,7 @@ app.post("/gerar-chave-pix", async (req, res) => {
       imagemQrcode: qrcodeData.imagemQrcode,
     });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao gerar chave Pix", detalhes: error.response?.data || error.message });
+    res.status(500).json({ error: "Erro ao gerar chave Pix", detalhes: error.response ? error.response.data : error.message });
   }
 });
 
@@ -114,7 +115,7 @@ app.post("/verificar-pagamento", async (req, res) => {
     const pagamento = await verificarPagamento(txid);
     res.json(pagamento);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao verificar pagamento", detalhes: error.response?.data || error.message });
+    res.status(500).json({ error: "Erro ao verificar pagamento", detalhes: error.response ? error.response.data : error.message });
   }
 });
 
