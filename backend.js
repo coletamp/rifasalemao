@@ -40,7 +40,14 @@ async function gerarChavePix(valor) {
     const idempotencyKey = uuidv4();
     console.log("X-Idempotency-Key gerado:", idempotencyKey);
 
+    // Verifique se o idempotencyKey não está null ou undefined
+    if (!idempotencyKey) {
+      throw new Error("A chave de idempotência não foi gerada corretamente.");
+    }
+
     // Fazendo a requisição ao Mercado Pago
+    console.log("Enviando requisição para Mercado Pago com X-Idempotency-Key:", idempotencyKey);
+
     const response = await axios.post(
       "https://api.mercadopago.com/v1/payments",
       payload,
