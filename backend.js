@@ -1,142 +1,77 @@
-"use strict";
-const axios = require("axios");
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+// Importações
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mercadopago = require('mercadopago');
+require('dotenv').config();
 
-// Configurações do servidor
+// Configuração do Mercado Pago
+mercadopago.configurations.setAccessToken(process.env.ACCESS_TOKEN);
+
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Credenciais do Mercado Pago
-const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
-
-// Função para gerar chave Pix e QR Code
-async function gerarChavePix(valor) {
-  try {
-    console.log("Iniciando a geração da chave Pix com Mercado Pago...");
-
-    const config = {
-      method: "POST",
-      url: "https://api.mercadopago.com/v1/transaction-intents/process",
-      headers: {
-        Authorization: `Bearer ${ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-        "X-Idempotency-Key": `unique-key-${Date.now()}`, // Chave única
-      },
-      data: {
-        external_reference: `MP-${Date.now()}`,
-        point_of_interaction: {
-          type: "PSP_TRANSFER",
-        },
-        seller_configuration: {
-          notification_url: "https://sua-url-de-notificacao.com",
-        },
-        transaction: {
-          from: {
-            accounts: [
-              {
-                amount: valor,
-              },
-            ],
-          },
-          to: {
-            accounts: [
-              {
-                type: "current",
-                amount: valor,
-                chave: {
-                  type: "CPF", // Tipo de chave Pix
-                  value: "00000000000", // CPF genérico
-                },
-              },
-            ],
-          },
-        },
-      },
-    };
-
-    const response = await axios(config);
-    const { point_of_interaction, id } = response.data;
-
-    console.log("Chave Pix gerada com sucesso:", id);
-
-    return {
-      txid: id,
-      qrcode: point_of_interaction.qr_code,
-      imagemQrcode: point_of_interaction.qr_code_base64,
-    };
-  } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error.response ? error.response.data : error.message);
-    throw error;
-  }
-}
-
-// Função para verificar o status de pagamento
-async function verificarPagamento(txid) {
-  try {
-    console.log("Verificando pagamento...");
-
-    const config = {
-      method: "GET",
-      url: `https://api.mercadopago.com/v1/payments/${txid}`,
-      headers: {
-        Authorization: `Bearer ${ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-    };
-
-    const response = await axios(config);
-    console.log("Pagamento verificado com sucesso:", response.data);
-
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao verificar pagamento:", error.response ? error.response.data : error.message);
-    throw error;
-  }
-}
-
-// Rota para gerar a chave Pix
-app.post("/gerar-chave-pix", async (req, res) => {
-  try {
+// Rota para gerar chave Pix
+app.post('/gerar-chave-pix', async (req, res) => {
     const { valor } = req.body;
 
-    // Verifica se o valor é válido
-    if (!valor || isNaN(valor) || valor <= 0) {
-      return res.status(400).json({ error: "Valor inválido. O valor deve ser um número maior que 0." });
+    if (!valor) {
+        return res.status(400).json({ error: 'Valor é obrigatório.' });
     }
 
-    const qrcodeData = await gerarChavePix(parseFloat(valor));
+    try {
+        const paymentData = {
+            transaction_amount: parseFloat(valor),
+            description: 'Pagamento Wesley Alemão Prêmios',
+            payment_method_id: 'pix',
+            payer: {
+                email: 'cliente@example.com', // Substituir pelo e-mail do cliente
+                first_name: 'Cliente',
+                last_name: 'Exemplo',
+                identification: {
+                    type: 'CPF',
+                    number: '12345678909' // Substituir por CPF do cliente
+                }
+            }
+        };
 
-    res.json({
-      txid: qrcodeData.txid,
-      qrcode: qrcodeData.qrcode,
-      imagemQrcode: qrcodeData.imagemQrcode,
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao gerar chave Pix", detalhes: error.response ? error.response.data : error.message });
-  }
+        const payment = await mercadopago.payment.create(paymentData);
+
+        return res.status(201).json({
+            txid: payment.body.id,
+            qrcode: payment.body.point_of_interaction.transaction_data.qr_code,
+            imagemQrcode: `data:image/jpeg;base64,${payment.body.point_of_interaction.transaction_data.qr_code_base64}`
+        });
+    } catch (error) {
+        console.error('Erro ao gerar chave Pix:', error);
+        res.status(500).json({ error: 'Erro ao gerar chave Pix.' });
+    }
 });
 
 // Rota para verificar o pagamento
-app.post("/verificar-pagamento", async (req, res) => {
-  try {
+app.post('/verificar-pagamento', async (req, res) => {
     const { txid } = req.body;
 
     if (!txid) {
-      return res.status(400).json({ error: "TXID é obrigatório" });
+        return res.status(400).json({ error: 'TXID é obrigatório.' });
     }
 
-    const pagamento = await verificarPagamento(txid);
-    res.json(pagamento);
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao verificar pagamento", detalhes: error.response ? error.response.data : error.message });
-  }
+    try {
+        const payment = await mercadopago.payment.get(txid);
+
+        return res.status(200).json({
+            status: payment.body.status,
+            status_detail: payment.body.status_detail
+        });
+    } catch (error) {
+        console.error('Erro ao verificar pagamento:', error);
+        res.status(500).json({ error: 'Erro ao verificar pagamento.' });
+    }
 });
 
-// Iniciando o servidor
-const PORT = 3000;
+// Iniciar o servidor
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
