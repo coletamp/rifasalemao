@@ -895,13 +895,13 @@ window.addEventListener('load', function() {
         <button id="increment">+</button>
     </div>
     <button id="calculateButton">Quero participar R$ 2,04</button>
-	<div id="pixQrCode"></div>
-	<div id="pixKey"></div>
-	<div id="selectedTitles"></div>
+<div id="pixQrCode"></div>
+<div id="pixKeyDisplay"></div> <!-- Renomeado para evitar duplicidade -->
+<div id="selectedTitles"></div>
 
-	<div id="pix-container">
+<div id="pix-container">
     <div id="pix-box">
-        <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+        <div id="pixKeyDisplay" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
     </div>
     <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
 </div>
@@ -919,7 +919,7 @@ window.addEventListener('load', function() {
   const incrementButton = document.getElementById("increment");
   const totalValueInput = document.getElementById("totalValue");
   const calculateButton = document.getElementById("calculateButton");
-  const pixKeyDiv = document.getElementById("pixKey");
+  const pixKeyDiv = document.getElementById("pixKeyDisplay"); // Ajustado para usar o novo nome
   const pixQrCode = document.getElementById("pixQrCode");
   const selectedTitlesDiv = document.getElementById("selectedTitles");
   const copyButton = document.getElementById('copy-pix-key-button');
@@ -1106,8 +1106,6 @@ window.addEventListener('load', function() {
     });
   }
 </script>
-
-
 
 <br>
 
