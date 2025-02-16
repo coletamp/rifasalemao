@@ -1,4 +1,5 @@
 "use strict";
+
 const express = require("express");
 const axios = require("axios");
 const bodyParser = require("body-parser");
@@ -32,10 +33,9 @@ async function gerarChavePix(valor) {
       },
     };
 
-    console.log("Payload preparado:", JSON.stringify(payload, null, 2));
+    console.log("Payload enviado para o Mercado Pago:", JSON.stringify(payload, null, 2));
 
     // Fazendo a requisição ao Mercado Pago
-    console.log("Enviando requisição para a API do Mercado Pago...");
     const response = await axios.post(
       "https://api.mercadopago.com/v1/payments",
       payload,
@@ -46,9 +46,9 @@ async function gerarChavePix(valor) {
         },
       }
     );
-    console.log("Resposta recebida da API do Mercado Pago:", JSON.stringify(response.data, null, 2));
 
-    // Verificando a resposta
+    console.log("Resposta da API Mercado Pago:", JSON.stringify(response.data, null, 2));
+
     if (response.data?.point_of_interaction?.transaction_data?.qr_code) {
       const pixData = response.data.point_of_interaction.transaction_data;
       console.log("Chave Pix gerada com sucesso:", pixData.qr_code);
@@ -61,35 +61,40 @@ async function gerarChavePix(valor) {
       throw new Error("Resposta inválida da API do Mercado Pago");
     }
   } catch (error) {
-    console.error("Erro ao gerar chave Pix:", error.response?.data || error.message);
+    console.error("Erro ao gerar chave Pix:");
+    console.error("Mensagem do erro:", error.message);
+    console.error("Erro completo:", error);
+    console.error("Resposta do erro:", error.response?.data || "Sem resposta");
     throw error;
   }
 }
 
 // Rota para gerar a chave Pix
 app.post("/gerar-chave-pix", async (req, res) => {
-  console.log("Recebendo requisição na rota /gerar-chave-pix...");
   try {
     const { valor } = req.body;
 
-    console.log("Corpo da requisição recebido:", JSON.stringify(req.body, null, 2));
+    console.log("Requisição recebida com valor:", valor);
 
     if (!valor || isNaN(valor)) {
-      console.error("Valor inválido recebido:", valor);
+      console.warn("Valor inválido recebido:", valor);
       return res.status(400).json({ error: "Valor inválido" });
     }
 
     const pixData = await gerarChavePix(valor);
 
-    console.log("Enviando resposta para o cliente...");
-    res.setHeader("Access-Control-Allow-Origin", "*"); // Adicionando o cabeçalho CORS
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.json({
       qr_code: pixData.qr_code,
       qr_code_base64: pixData.qr_code_base64,
     });
   } catch (error) {
-    console.error("Erro interno ao processar a requisição:", error);
-    res.status(500).json({ error: "Erro ao gerar chave Pix", details: error.message });
+    console.error("Erro interno ao gerar chave Pix:", error.message);
+    console.error("Detalhes completos do erro:", error);
+    res.status(500).json({
+      error: "Erro ao gerar chave Pix",
+      details: error.response?.data || error.message,
+    });
   }
 });
 
