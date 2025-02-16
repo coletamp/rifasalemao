@@ -66,11 +66,23 @@ app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor } = req.body;
 
+    console.log("Valor recebido:", valor); // Adicionado para depuração
+
     if (!valor || isNaN(valor)) {
       return res.status(400).json({ error: "Valor inválido" });
     }
 
     const pixData = await gerarChavePix(valor);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({
+      qr_code: pixData.qr_code,
+      qr_code_base64: pixData.qr_code_base64,
+    });
+  } catch (error) {
+    console.error("Erro interno:", error); // Mais detalhes sobre o erro
+    res.status(500).json({ error: "Erro ao gerar chave Pix", details: error.message });
+  }
+});
     
     // Garantindo que o CORS seja corretamente configurado na resposta
     res.setHeader('Access-Control-Allow-Origin', '*'); // Permite todas as origens
