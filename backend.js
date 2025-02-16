@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Credenciais do Mercado Pago
-const MP_ACCESS_TOKEN = "SEU_ACCESS_TOKEN_AQUI";
+const MP_ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
 
 // Função para gerar chave Pix e QR Code
 async function gerarChavePix(valor) {
