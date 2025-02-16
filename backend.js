@@ -1,20 +1,3 @@
-"use strict";
-
-const express = require("express");
-const axios = require("axios");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const { v4: uuidv4 } = require("uuid"); // Biblioteca para gerar UUID
-
-// Configurações do servidor
-const app = express();
-app.use(bodyParser.json());
-app.use(cors());
-
-// Credenciais do Mercado Pago
-const MP_ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
-
-// Função para gerar chave Pix e QR Code
 async function gerarChavePix(valor) {
   try {
     console.log("Iniciando a geração da chave Pix...");
@@ -45,8 +28,8 @@ async function gerarChavePix(valor) {
       throw new Error("A chave de idempotência não foi gerada corretamente.");
     }
 
-    // Certifique-se de que estamos passando o idempotencyKey corretamente na requisição
-    console.log("Enviando requisição para Mercado Pago com X-Idempotency-Key:", idempotencyKey);
+    // Verificando o valor antes de enviar
+    console.log("Valor da chave de idempotência antes de enviar:", idempotencyKey);
 
     // Fazendo a requisição ao Mercado Pago
     const response = await axios.post(
@@ -56,7 +39,7 @@ async function gerarChavePix(valor) {
         headers: {
           Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
-          "X-Idempotency-Key": idempotencyKey, // Passando o header correto
+          "X-Idempotency-Key": idempotencyKey, // Passando o header corretamente
         },
       }
     );
@@ -82,38 +65,3 @@ async function gerarChavePix(valor) {
     throw error;
   }
 }
-
-// Rota para gerar a chave Pix
-app.post("/gerar-chave-pix", async (req, res) => {
-  try {
-    const { valor } = req.body;
-
-    console.log("Requisição recebida com valor:", valor);
-
-    if (!valor || isNaN(valor)) {
-      console.warn("Valor inválido recebido:", valor);
-      return res.status(400).json({ error: "Valor inválido" });
-    }
-
-    const pixData = await gerarChavePix(valor);
-
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.json({
-      qr_code: pixData.qr_code,
-      qr_code_base64: pixData.qr_code_base64,
-    });
-  } catch (error) {
-    console.error("Erro interno ao gerar chave Pix:", error.message);
-    console.error("Detalhes completos do erro:", error);
-    res.status(500).json({
-      error: "Erro ao gerar chave Pix",
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-// Iniciando o servidor
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
