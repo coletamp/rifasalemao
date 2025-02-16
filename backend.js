@@ -1,58 +1,44 @@
-// Backend - Node.js
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import { Payment, MercadoPagoConfig } from 'mercadopago';
+const express = require('express');
+const axios = require('axios');
+const bodyParser = require('body-parser');
 
-// Configurações iniciais do servidor
 const app = express();
-app.use(cors());
 app.use(bodyParser.json());
 
-// Configuração do MercadoPago
-const client = new MercadoPagoConfig({ accessToken: '<ACCESS_TOKEN>' }); // Substitua pelo seu token
+// Endpoint para gerar a chave Pix
+app.post('/gerar-chave-pix', async (req, res) => {
+  const { valor, descricao, email } = req.body;
 
-// Endpoint para criar pagamento via Pix
-app.post('/create_pix_payment', async (req, res) => {
-    try {
-        const { transactionAmount, description } = req.body;
+  try {
+    // Requisição para a API do Mercado Pago
+    const response = await axios.post('https://api.mercadopago.com/v1/payments', {
+      transaction_amount: parseFloat(valor),
+      description: descricao,
+      payment_method_id: 'pix',
+      payer: {
+        email: email,
+      }
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer SEU_ACCESS_TOKEN`
+      }
+    });
 
-        const payment = new Payment(client);
-        const result = await payment.create({
-            body: {
-                transaction_amount: transactionAmount,
-                description,
-                payment_method_id: 'pix',
-                payer: {
-                    email: 'comprador@exemplo.com', // Adapte conforme necessário
-                    identification: {
-                        type: 'CPF',
-                        number: '12345678900', // Apenas como exemplo
-                    },
-                },
-                date_of_expiration: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // 24 horas
-            },
-            requestOptions: {
-                idempotencyKey: `<SOME_UNIQUE_VALUE>` // Substitua por um valor único para evitar duplicação
-            }
-        });
-
-        return res.status(200).json({
-            qrCodeBase64: result.body.point_of_interaction.transaction_data.qr_code_base64,
-            pixCode: result.body.point_of_interaction.transaction_data.qr_code,
-        });
-    } catch (error) {
-        console.error('Erro ao criar pagamento com Pix:', error);
-        return res.status(500).json({ error: 'Erro ao criar pagamento com Pix' });
-    }
+    // Retorna os dados relevantes para o front-end
+    res.json({
+      id: response.data.id,
+      qr_code: response.data.point_of_interaction.transaction_data.qr_code,
+      qr_code_base64: response.data.point_of_interaction.transaction_data.qr_code_base64
+    });
+  } catch (error) {
+    console.error('Erro ao criar pagamento Pix:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Erro ao criar pagamento Pix' });
+  }
 });
 
-// Inicializar servidor
-const PORT = 3000;
+// Inicia o servidor
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-
-// Frontend
-    </script>
