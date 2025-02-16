@@ -1,67 +1,58 @@
-async function gerarChavePix(valor) {
-  try {
-    console.log("Iniciando a geração da chave Pix...");
+// Backend - Node.js
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import { Payment, MercadoPagoConfig } from 'mercadopago';
 
-    const payload = {
-      transaction_amount: parseFloat(valor),
-      description: "Pagamento via Pix",
-      payment_method_id: "pix",
-      payer: {
-        email: "emaildopagador@example.com", // Substitua por um email válido
-        first_name: "Nome",
-        last_name: "Sobrenome",
-        identification: {
-          type: "CPF",
-          number: "12345678909", // Substitua por um CPF válido
-        },
-      },
-    };
+// Configurações iniciais do servidor
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-    console.log("Payload enviado para o Mercado Pago:", JSON.stringify(payload, null, 2));
+// Configuração do MercadoPago
+const client = new MercadoPagoConfig({ accessToken: '<ACCESS_TOKEN>' }); // Substitua pelo seu token
 
-    // Gerando uma chave única para o header X-Idempotency-Key
-    const idempotencyKey = uuidv4();
-    console.log("X-Idempotency-Key gerado:", idempotencyKey);
+// Endpoint para criar pagamento via Pix
+app.post('/create_pix_payment', async (req, res) => {
+    try {
+        const { transactionAmount, description } = req.body;
 
-    // Verificando se o idempotencyKey não está null ou undefined
-    if (!idempotencyKey) {
-      throw new Error("A chave de idempotência não foi gerada corretamente.");
+        const payment = new Payment(client);
+        const result = await payment.create({
+            body: {
+                transaction_amount: transactionAmount,
+                description,
+                payment_method_id: 'pix',
+                payer: {
+                    email: 'comprador@exemplo.com', // Adapte conforme necessário
+                    identification: {
+                        type: 'CPF',
+                        number: '12345678900', // Apenas como exemplo
+                    },
+                },
+                date_of_expiration: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // 24 horas
+            },
+            requestOptions: {
+                idempotencyKey: `<SOME_UNIQUE_VALUE>` // Substitua por um valor único para evitar duplicação
+            }
+        });
+
+        return res.status(200).json({
+            qrCodeBase64: result.body.point_of_interaction.transaction_data.qr_code_base64,
+            pixCode: result.body.point_of_interaction.transaction_data.qr_code,
+        });
+    } catch (error) {
+        console.error('Erro ao criar pagamento com Pix:', error);
+        return res.status(500).json({ error: 'Erro ao criar pagamento com Pix' });
     }
+});
 
-    // Verificando o valor antes de enviar
-    console.log("Valor da chave de idempotência antes de enviar:", idempotencyKey);
+// Inicializar servidor
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+});
 
-    // Fazendo a requisição ao Mercado Pago
-    const response = await axios.post(
-      "https://api.mercadopago.com/v1/payments",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-          "X-Idempotency-Key": idempotencyKey, // Passando o header corretamente
-        },
-      }
-    );
 
-    console.log("Resposta da API Mercado Pago:", JSON.stringify(response.data, null, 2));
-
-    if (response.data?.point_of_interaction?.transaction_data?.qr_code) {
-      const pixData = response.data.point_of_interaction.transaction_data;
-      console.log("Chave Pix gerada com sucesso:", pixData.qr_code);
-      return {
-        qr_code: pixData.qr_code,
-        qr_code_base64: pixData.qr_code_base64,
-      };
-    } else {
-      console.error("Resposta inválida da API do Mercado Pago:", response.data);
-      throw new Error("Resposta inválida da API do Mercado Pago");
-    }
-  } catch (error) {
-    console.error("Erro ao gerar chave Pix:");
-    console.error("Mensagem do erro:", error.message);
-    console.error("Erro completo:", error);
-    console.error("Resposta do erro:", error.response?.data || "Sem resposta");
-    throw error;
-  }
-}
+// Frontend
+    </script>
