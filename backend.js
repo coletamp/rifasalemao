@@ -4,7 +4,7 @@ const app = express();
 app.use(express.json());
 
 // Substitua com suas credenciais do Mercado Pago
-const ACCESS_TOKEN = 'SUA_ACCESS_TOKEN';
+const ACCESS_TOKEN = 'TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337';
 
 app.post('/gerar-pix', async (req, res) => {
   const { valor, descricao } = req.body;
