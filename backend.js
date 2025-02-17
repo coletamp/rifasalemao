@@ -5,79 +5,55 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 
+// Configurações do servidor
 const app = express();
 app.use(bodyParser.json());
-app.use(cors({ origin: "*" }));
+app.use(cors());
 
-// Credenciais do Mercado Pago – use seu token real
+// Credenciais do Mercado Pago
 const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
 
-// Função para gerar a chave PIX utilizando o endpoint de criar preferência
-async function gerarChavePix(valor) {
+// Função para gerar chave PIX e QR Code
+async function gerarChavePix(valor, payerEmail = "cliente@exemplo.com", payerCpf = "12345678909") {
   try {
+    console.log("Iniciando a geração da chave PIX...");
+
+    // Gerar chave idempotente
     const idempotencyKey = uuidv4();
     console.log("Idempotency Key gerada:", idempotencyKey);
 
-    // Chamando o endpoint correto para criar a preferência de pagamento (Checkout)
     const response = await axios.post(
-      "https://api.mercadopago.com/checkout/preferences",
+      "https://api.mercadopago.com/v1/payments",
       {
-        items: [
-          {
-            title: "Pagamento via PIX",
-            quantity: 1,
-            unit_price: valor,
-          },
-        ],
-        payment_methods: {
-          default_payment_method_id: "pix",  // Definindo PIX como o método de pagamento
-          excluded_payment_types: [
-            {
-              id: "ticket", // Exclui outros métodos como boletos, por exemplo
-            },
-          ],
-          installments: 1,
-        },
-        back_urls: {
-          success: "https://www.sucesso.com.br",
-          failure: "https://www.falha.com.br",
-          pending: "https://www.pendente.com.br",
-        },
+        transaction_amount: valor,
+        description: "Pagamento via PIX",
+        payment_method_id: "pix",
         payer: {
-          email: "cliente@exemplo.com",
+          email: payerEmail, // E-mail do pagador
           identification: {
             type: "CPF",
-            number: "12345678909",
+            number: payerCpf, // CPF do pagador
           },
         },
-        notification_url: "https://www.seunotificacao.com.br",
-        external_reference: "referencia-externa-12345",
       },
       {
         headers: {
           Authorization: `Bearer ${ACCESS_TOKEN}`,
           "Content-Type": "application/json",
-          "X-Idempotency-Key": idempotencyKey,
+          "X-Idempotency-Key": idempotencyKey, // Adicionando a chave idempotente
         },
       }
     );
 
-    console.log("Resposta da API do Mercado Pago:", response.data);
+    // Extraindo dados necessários
+    const { point_of_interaction, id } = response.data;
 
-    const { point_of_interaction } = response.data;
-
-    if (!point_of_interaction || !point_of_interaction.transaction_data) {
-      throw new Error("Dados de interação PIX não encontrados na resposta.");
-    }
-
-    const { transaction_data } = point_of_interaction;
-    const { qr_code, qr_code_base64, ticket_url } = transaction_data;
+    console.log("Chave PIX gerada com sucesso:", id);
 
     return {
-      txid: response.data.id,
-      qrcode: qr_code,
-      copiaECola: qr_code_base64,
-      ticket_url: ticket_url,
+      txid: id, // ID da transação
+      qrcode: point_of_interaction.transaction_data.qr_code, // Código QR
+      copiaECola: point_of_interaction.transaction_data.qr_code_base64, // Código PIX Copia e Cola
     };
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
@@ -88,17 +64,25 @@ async function gerarChavePix(valor) {
 // Rota para gerar a chave PIX
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
-    const { valor } = req.body;
+    const { valor, payerEmail, payerCpf } = req.body;
+
     if (!valor || isNaN(valor)) {
       return res.status(400).json({ error: "Valor inválido" });
     }
-    const qrcodeData = await gerarChavePix(parseFloat(valor));
-    res.json(qrcodeData);
+
+    const qrcodeData = await gerarChavePix(parseFloat(valor), payerEmail, payerCpf);
+
+    res.json({
+      txid: qrcodeData.txid,
+      qrcode: qrcodeData.qrcode,
+      copiaECola: qrcodeData.copiaECola,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+// Iniciando o servidor
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
