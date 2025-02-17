@@ -5,26 +5,22 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 
-// Configurações do servidor
 const app = express();
 app.use(bodyParser.json());
-// Permitir requisições de qualquer origem (ou especifique: { origin: "https://coletamp.github.io" })
 app.use(cors({ origin: "*" }));
 
-// Credenciais do Mercado Pago
+// Credenciais do Mercado Pago – use seu token real
 const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
 
-// Função para gerar chave PIX e QR Code
+// Função para gerar a chave PIX utilizando o endpoint de PIX Transfer
 async function gerarChavePix(valor) {
   try {
-    console.log("Iniciando a geração da chave PIX...");
-
-    // Gerar chave idempotente
     const idempotencyKey = uuidv4();
     console.log("Idempotency Key gerada:", idempotencyKey);
 
+    // Chamando o endpoint correto para PIX Transfer
     const response = await axios.post(
-      "https://api.mercadopago.com/v1/payments",
+      "https://api.mercadopago.com/v1/pix/transfer", // endpoint de PIX transfer
       {
         transaction_amount: valor,
         description: "Pagamento via PIX",
@@ -46,14 +42,18 @@ async function gerarChavePix(valor) {
       }
     );
 
-    // Extraindo dados necessários
+    // Extraindo os dados retornados conforme a documentação
     const { point_of_interaction, id } = response.data;
     console.log("Chave PIX gerada com sucesso:", id);
 
     return {
       txid: id,
-      qrcode: point_of_interaction.transaction_data.qr_code, // Código QR retornado pela API
-      copiaECola: point_of_interaction.transaction_data.qr_code, // Usando o mesmo valor para "copia e cola"
+      // Utiliza o valor para copia e cola (texto) conforme a documentação
+      qrcode: point_of_interaction.transaction_data.qr_code,
+      // Utiliza a string base64 para a imagem do QR Code
+      copiaECola: point_of_interaction.transaction_data.qr_code_base64,
+      // Se necessário, também pode retornar o ticket_url:
+      ticket_url: point_of_interaction.transaction_data.ticket_url,
     };
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
@@ -69,17 +69,12 @@ app.post("/gerar-chave-pix", async (req, res) => {
       return res.status(400).json({ error: "Valor inválido" });
     }
     const qrcodeData = await gerarChavePix(parseFloat(valor));
-    res.json({
-      txid: qrcodeData.txid,
-      qrcode: qrcodeData.qrcode,
-      copiaECola: qrcodeData.copiaECola,
-    });
+    res.json(qrcodeData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Iniciando o servidor
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
