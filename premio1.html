@@ -913,8 +913,14 @@ window.addEventListener('load', function() {
   </ul>
 </div>
 
+<script src="https://sdk.mercadopago.com/js/v2"></script> <!-- SDK MercadoPago -->
+
 <script>
-  // Selecionando os elementos principais
+  // Inicializando o MercadoPago
+  const mp = new MercadoPago('TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337', {
+    locale: 'pt-BR'
+  });
+
   const decrementButton = document.getElementById("decrement");
   const incrementButton = document.getElementById("increment");
   const totalValueInput = document.getElementById("totalValue");
@@ -926,27 +932,16 @@ window.addEventListener('load', function() {
   const cards = document.querySelectorAll('.card');
 
   let totalValue = parseFloat(totalValueInput.value) || 1;
-  console.log("Valor total inicial:", totalValue);
 
-  // Função para verificar se o telefone está salvo no localStorage
-  function isPhoneSaved() {
-    console.log("Verificando se o telefone está salvo...");
-    return localStorage.getItem('userPhone') !== null;
-  }
-
-  // Função para atualizar o botão com o valor correto
   function updateButton() {
     const pricePerNumber = 0.63;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
-    console.log("Botão de calcular atualizado:", totalAmount);
   }
   updateButton();
 
-  // Eventos para os cards, incremento, decremento e input permanecem iguais…
   cards.forEach(card => {
     card.addEventListener('click', () => {
-      console.log("Card clicado.");
       const selectedValue = parseFloat(card.getAttribute('data-value')) || 0;
       totalValue += selectedValue;
       totalValueInput.value = totalValue;
@@ -955,6 +950,7 @@ window.addEventListener('load', function() {
       card.classList.add('selected');
     });
   });
+
   decrementButton.addEventListener("click", () => {
     if (totalValue > 1) {
       totalValue--;
@@ -962,17 +958,18 @@ window.addEventListener('load', function() {
       updateButton();
     }
   });
+
   incrementButton.addEventListener("click", () => {
     totalValue++;
     totalValueInput.value = totalValue;
     updateButton();
   });
+
   totalValueInput.addEventListener("input", () => {
     totalValue = parseFloat(totalValueInput.value) || 1;
     updateButton();
   });
 
-  // Função para gerar os títulos
   function generateTitles(totalValue) {
     const titles = [];
     for (let i = 1; i <= totalValue; i++) {
@@ -983,7 +980,6 @@ window.addEventListener('load', function() {
     return titles;
   }
 
-  // Evento para gerar a chave Pix e exibir QR Code e "copia e cola"
   calculateButton.addEventListener("click", async () => {
     if (!isPhoneSaved()) {
       alert("Por favor, faça login informando seu número de telefone primeiro.");
@@ -1000,16 +996,11 @@ window.addEventListener('load', function() {
         body: JSON.stringify({ valor: parseFloat(totalAmount) }),
       });
       const data = await response.json();
-      console.log("Resposta da geração da chave Pix:", data);
 
-      // Verifica se a resposta contém os dados esperados: txid, qrcode e copiaECola
       if (data.txid && data.qrcode && data.copiaECola) {
-        // Exibe o valor para "copia e cola" (usando o campo qrcode)
         pixKeyDiv.textContent = data.qrcode;
 
-        // Para exibir a imagem, usamos o campo copiaECola (que deve conter a imagem em base64)
         const qrCodeImage = document.createElement("img");
-        // Se a string não começar com "data:image", adiciona o prefixo
         if (!data.copiaECola.startsWith("data:image/")) {
           qrCodeImage.src = "data:image/png;base64," + data.copiaECola;
         } else {
@@ -1021,7 +1012,6 @@ window.addEventListener('load', function() {
 
         copyButton.style.display = "inline-block";
 
-        // Verificação do pagamento (o endpoint /verificar-pagamento não está implementado, então pode retornar 404)
         setInterval(async () => {
           try {
             const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
@@ -1047,7 +1037,6 @@ window.addEventListener('load', function() {
     }
   });
 
-  // Evento para copiar a chave Pix
   copyButton.addEventListener('click', function () {
     const pixKey = pixKeyDiv.textContent;
     navigator.clipboard.writeText(pixKey).then(() => {
@@ -1057,6 +1046,7 @@ window.addEventListener('load', function() {
     });
   });
 </script>
+
 
 
 
