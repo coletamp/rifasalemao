@@ -12,19 +12,36 @@ app.use(cors({ origin: "*" }));
 // Credenciais do Mercado Pago – use seu token real
 const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
 
-// Função para gerar a chave PIX utilizando o endpoint de PIX Transfer
+// Função para gerar a chave PIX utilizando o endpoint de criar preferência
 async function gerarChavePix(valor) {
   try {
     const idempotencyKey = uuidv4();
     console.log("Idempotency Key gerada:", idempotencyKey);
 
-    // Chamando o endpoint correto para PIX Transfer
+    // Chamando o endpoint correto para criar a preferência de pagamento (Checkout)
     const response = await axios.post(
-      "https://api.mercadopago.com/v1/pix/transfer", // endpoint de PIX transfer
+      "https://api.mercadopago.com/checkout/preferences",
       {
-        transaction_amount: valor,
-        description: "Pagamento via PIX",
-        payment_method_id: "pix",
+        items: [
+          {
+            title: "Pagamento via PIX",
+            quantity: 1,
+            unit_price: valor,
+          },
+        ],
+        payment_methods: {
+          excluded_payment_types: [
+            {
+              id: "ticket", // Exclui outros métodos como boletos, por exemplo
+            },
+          ],
+          installments: 1,
+        },
+        back_urls: {
+          success: "https://www.sucesso.com.br",
+          failure: "https://www.falha.com.br",
+          pending: "https://www.pendente.com.br",
+        },
         payer: {
           email: "cliente@exemplo.com",
           identification: {
@@ -32,6 +49,8 @@ async function gerarChavePix(valor) {
             number: "12345678909",
           },
         },
+        notification_url: "https://www.seunotificacao.com.br",
+        external_reference: "referencia-externa-12345",
       },
       {
         headers: {
@@ -48,11 +67,8 @@ async function gerarChavePix(valor) {
 
     return {
       txid: id,
-      // Utiliza o valor para copia e cola (texto) conforme a documentação
       qrcode: point_of_interaction.transaction_data.qr_code,
-      // Utiliza a string base64 para a imagem do QR Code
       copiaECola: point_of_interaction.transaction_data.qr_code_base64,
-      // Se necessário, também pode retornar o ticket_url:
       ticket_url: point_of_interaction.transaction_data.ticket_url,
     };
   } catch (error) {
