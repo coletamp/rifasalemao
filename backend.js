@@ -23,6 +23,13 @@ async function gerarChavePix(valor) {
         transaction_amount: valor,
         description: "Pagamento via PIX",
         payment_method_id: "pix",
+        payer: {
+          email: "cliente@exemplo.com", // Dados genéricos para atender à exigência
+          identification: {
+            type: "CPF",
+            number: "12345678909" // CPF genérico
+          }
+        }
       },
       {
         headers: {
