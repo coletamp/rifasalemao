@@ -15,23 +15,22 @@ const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba
 // Função para gerar chave PIX e QR Code
 async function gerarChavePix(valor) {
   try {
-    console.log("Iniciando a geração da chave PIX com Mercado Pago...");
+    console.log("Iniciando a geração da chave PIX...");
 
-    const config = {
-      method: "POST",
-      url: "https://api.mercadopago.com/v1/payments",
-      headers: {
-        Authorization: `Bearer ${ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      data: {
+    const response = await axios.post(
+      "https://api.mercadopago.com/v1/payments",
+      {
         transaction_amount: valor,
         description: "Pagamento via PIX",
         payment_method_id: "pix",
       },
-    };
-
-    const response = await axios(config);
+      {
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     // Extraindo dados necessários
     const { point_of_interaction, id } = response.data;
@@ -45,7 +44,7 @@ async function gerarChavePix(valor) {
     };
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
-    throw error;
+    throw new Error(error.response?.data?.message || "Erro ao gerar chave PIX");
   }
 }
 
@@ -66,7 +65,7 @@ app.post("/gerar-chave-pix", async (req, res) => {
       copiaECola: qrcodeData.copiaECola,
     });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao gerar chave PIX" });
+    res.status(500).json({ error: error.message });
   }
 });
 
