@@ -901,8 +901,7 @@ window.addEventListener('load', function() {
 
 <div id="pix-container">
   <div id="pix-box">
-    <!-- Esse mesmo id "pixKey" está duplicado aqui. Se necessário, remova a duplicação para evitar conflito -->
-    <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+    <!-- Removi o elemento duplicado com id "pixKey" para evitar conflito -->
   </div>
   <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
 </div>
@@ -933,12 +932,6 @@ window.addEventListener('load', function() {
   function isPhoneSaved() {
     console.log("Verificando se o telefone está salvo...");
     return localStorage.getItem('userPhone') !== null;
-  }
-
-  // Função para salvar o número de telefone no localStorage (quando o usuário inserir o número)
-  function savePhoneNumber(phoneNumber) {
-    localStorage.setItem("userPhone", phoneNumber);
-    console.log("Número de telefone salvo no localStorage.");
   }
 
   // Função para atualizar o botão com o valor correto
@@ -1030,13 +1023,12 @@ window.addEventListener('load', function() {
       const data = await response.json();
       console.log("Resposta da geração da chave Pix:", data);
 
-      // Agora, verificamos os campos retornados: txid, qrcode e copiaECola
+      // Verifica se a resposta contém os dados esperados: txid, qrcode e copiaECola
       if (data.txid && data.qrcode && data.copiaECola) {
         // Exibe a chave Pix (cópia e cola)
         pixKeyDiv.textContent = data.copiaECola;
 
-        // Gera a imagem do QR Code utilizando a API do Google Charts
-        // A URL abaixo gera um QR Code a partir da string contida em data.qrcode
+        // Gera a imagem do QR Code utilizando a API do Google Charts a partir da string data.qrcode
         const qrCodeImage = document.createElement("img");
         qrCodeImage.src = "https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=" + encodeURIComponent(data.qrcode);
         qrCodeImage.alt = "QR Code Pix";
@@ -1048,7 +1040,7 @@ window.addEventListener('load', function() {
         copyButton.style.display = "inline-block";
         console.log("Botão de copiar chave Pix exibido.");
 
-        // Verificação do pagamento a cada 5 segundos
+        // Verificação do pagamento a cada 5 segundos (o endpoint "/verificar-pagamento" não está implementado, por isso 404 aparecerá)
         setInterval(async () => {
           console.log("Verificando pagamento...");
           try {
@@ -1097,6 +1089,7 @@ window.addEventListener('load', function() {
     });
   }
 </script>
+
 
 
 
