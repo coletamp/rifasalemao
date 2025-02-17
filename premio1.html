@@ -933,6 +933,7 @@ window.addEventListener('load', function() {
 
   let totalValue = parseFloat(totalValueInput.value) || 1;
 
+  // Função para atualizar o valor do botão de participação
   function updateButton() {
     const pricePerNumber = 0.63;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
@@ -940,6 +941,7 @@ window.addEventListener('load', function() {
   }
   updateButton();
 
+  // Evento de clique nos cards para somar o valor
   cards.forEach(card => {
     card.addEventListener('click', () => {
       const selectedValue = parseFloat(card.getAttribute('data-value')) || 0;
@@ -951,6 +953,7 @@ window.addEventListener('load', function() {
     });
   });
 
+  // Decrementar valor ao clicar no botão de decremento
   decrementButton.addEventListener("click", () => {
     if (totalValue > 1) {
       totalValue--;
@@ -959,17 +962,20 @@ window.addEventListener('load', function() {
     }
   });
 
+  // Incrementar valor ao clicar no botão de incremento
   incrementButton.addEventListener("click", () => {
     totalValue++;
     totalValueInput.value = totalValue;
     updateButton();
   });
 
+  // Atualizar total quando o valor no input for alterado
   totalValueInput.addEventListener("input", () => {
     totalValue = parseFloat(totalValueInput.value) || 1;
     updateButton();
   });
 
+  // Função para gerar os títulos disponíveis
   function generateTitles(totalValue) {
     const titles = [];
     for (let i = 1; i <= totalValue; i++) {
@@ -980,6 +986,7 @@ window.addEventListener('load', function() {
     return titles;
   }
 
+  // Evento de clique no botão de calcular
   calculateButton.addEventListener("click", async () => {
     if (!isPhoneSaved()) {
       alert("Por favor, faça login informando seu número de telefone primeiro.");
@@ -1012,6 +1019,7 @@ window.addEventListener('load', function() {
 
         copyButton.style.display = "inline-block";
 
+        // Verificar status de pagamento a cada 5 segundos
         setInterval(async () => {
           try {
             const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
@@ -1037,6 +1045,7 @@ window.addEventListener('load', function() {
     }
   });
 
+  // Evento para copiar a chave Pix
   copyButton.addEventListener('click', function () {
     const pixKey = pixKeyDiv.textContent;
     navigator.clipboard.writeText(pixKey).then(() => {
@@ -1046,6 +1055,7 @@ window.addEventListener('load', function() {
     });
   });
 </script>
+
 
 
 
