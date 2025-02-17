@@ -3,7 +3,7 @@ const axios = require("axios");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { v4: uuidv4 } = require("uuid"); // Biblioteca para gerar UUIDs
+const { v4: uuidv4 } = require("uuid"); // Importação correta da biblioteca uuid
 
 // Configurações do servidor
 const app = express();
@@ -20,7 +20,7 @@ async function gerarChavePix(valor) {
 
     // Gerar chave idempotente
     const idempotencyKey = uuidv4();
-    console.log("Idempotency Key:", idempotencyKey);
+    console.log("Idempotency Key gerada:", idempotencyKey);
 
     const response = await axios.post(
       "https://api.mercadopago.com/v1/payments",
