@@ -58,7 +58,7 @@ async function gerarChavePix(valor) {
 }
 
 // Rota para gerar a chave Pix
-app.post("/gerar-chave-pix", async (req, res) => {
+app.post("/mercado-pago/gerar-pix", async (req, res) => {
   try {
     const { valor } = req.body;
 
