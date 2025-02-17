@@ -3,7 +3,7 @@ const axios = require("axios");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { v4: uuidv4 } = require("uuid"); // Importação correta da biblioteca uuid
+const { v4: uuidv4 } = require("uuid");
 
 // Configurações do servidor
 const app = express();
@@ -29,10 +29,10 @@ async function gerarChavePix(valor) {
         description: "Pagamento via PIX",
         payment_method_id: "pix",
         payer: {
-          email: "cliente@exemplo.com", // Dados genéricos
+          email: "cliente@exemplo.com",
           identification: {
             type: "CPF",
-            number: "12345678909", // CPF genérico
+            number: "12345678909",
           },
         },
       },
@@ -40,20 +40,19 @@ async function gerarChavePix(valor) {
         headers: {
           Authorization: `Bearer ${ACCESS_TOKEN}`,
           "Content-Type": "application/json",
-          "X-Idempotency-Key": idempotencyKey, // Adicionando a chave idempotente
+          "X-Idempotency-Key": idempotencyKey,
         },
       }
     );
 
     // Extraindo dados necessários
     const { point_of_interaction, id } = response.data;
-
     console.log("Chave PIX gerada com sucesso:", id);
 
     return {
-      txid: id, // ID da transação
-      qrcode: point_of_interaction.transaction_data.qr_code, // Código QR
-      copiaECola: point_of_interaction.transaction_data.qr_code_base64, // Código PIX Copia e Cola
+      txid: id,
+      qrcode: point_of_interaction.transaction_data.qr_code, // Código QR retornado pela API
+      copiaECola: point_of_interaction.transaction_data.qr_code, // Usando o mesmo valor para o "copia e cola"
     };
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
@@ -65,13 +64,11 @@ async function gerarChavePix(valor) {
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor } = req.body;
-
     if (!valor || isNaN(valor)) {
       return res.status(400).json({ error: "Valor inválido" });
     }
 
     const qrcodeData = await gerarChavePix(parseFloat(valor));
-
     res.json({
       txid: qrcodeData.txid,
       qrcode: qrcodeData.qrcode,
