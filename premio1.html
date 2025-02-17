@@ -918,8 +918,29 @@ window.addEventListener('load', function() {
 <script>
   // Inicializando o MercadoPago
   const mp = new MercadoPago('TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337', {
-    locale: 'pt-BR'
-  });
+  locale: 'pt-BR'
+});
+
+// A função de busca de métodos de pagamento
+async function fetchPaymentMethods() {
+  try {
+    const response = await fetch(`https://api.mercadopago.com/v1/payment_methods/search?public_key=TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337&locale=pt-BR&marketplace=NONE`, {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337'
+      }
+    });
+
+    const data = await response.json();
+    console.log(data); // Para verificar o retorno da API
+
+  } catch (error) {
+    console.error('Erro ao buscar métodos de pagamento:', error);
+  }
+}
+
+// Chamada para buscar métodos de pagamento
+fetchPaymentMethods();
 
   const decrementButton = document.getElementById("decrement");
   const incrementButton = document.getElementById("increment");
