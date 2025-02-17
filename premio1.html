@@ -895,22 +895,23 @@ window.addEventListener('load', function() {
         <button id="increment">+</button>
     </div>
     <button id="calculateButton">Quero participar R$ 2,37</button>
-	<div id="pixQrCode"></div>
-	<div id="pixKey"></div>
-	<div id="selectedTitles"></div>
+<div id="pixQrCode"></div>
+<div id="pixKey"></div>
+<div id="selectedTitles"></div>
 
-	<div id="pix-container">
-    <div id="pix-box">
-        <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
-    </div>
-    <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
+<div id="pix-container">
+  <div id="pix-box">
+    <!-- Usamos apenas um elemento com id="pixKey" agora -->
+    <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+  </div>
+  <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
 </div>
 
 <div id="titulo-container" style="display:none;">
-    <h3>Títulos Disponíveis:</h3>
-    <ul id="titulo-list">
-        <!-- Os títulos serão listados aqui -->
-    </ul>
+  <h3>Títulos Disponíveis:</h3>
+  <ul id="titulo-list">
+    <!-- Os títulos serão listados aqui -->
+  </ul>
 </div>
 
 <script>
@@ -1041,7 +1042,7 @@ window.addEventListener('load', function() {
 
       if (data.txid && data.qrcode && data.imagemQrcode) {
         // Exibir a chave Pix
-        pixKeyDiv.textContent = `${data.qrcode}`;
+        pixKeyDiv.textContent = `Chave Pix: ${data.txid}`;
 
         // Exibir QR Code
         const qrCodeImage = document.createElement("img");
@@ -1106,6 +1107,7 @@ window.addEventListener('load', function() {
     });
   }
 </script>
+
 
 
 
