@@ -8,7 +8,8 @@ const { v4: uuidv4 } = require("uuid");
 // Configurações do servidor
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+// Permitir requisições de qualquer origem (ou especifique: { origin: "https://coletamp.github.io" })
+app.use(cors({ origin: "*" }));
 
 // Credenciais do Mercado Pago
 const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
@@ -52,7 +53,7 @@ async function gerarChavePix(valor) {
     return {
       txid: id,
       qrcode: point_of_interaction.transaction_data.qr_code, // Código QR retornado pela API
-      copiaECola: point_of_interaction.transaction_data.qr_code, // Usando o mesmo valor para o "copia e cola"
+      copiaECola: point_of_interaction.transaction_data.qr_code, // Usando o mesmo valor para "copia e cola"
     };
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
@@ -67,7 +68,6 @@ app.post("/gerar-chave-pix", async (req, res) => {
     if (!valor || isNaN(valor)) {
       return res.status(400).json({ error: "Valor inválido" });
     }
-
     const qrcodeData = await gerarChavePix(parseFloat(valor));
     res.json({
       txid: qrcodeData.txid,
