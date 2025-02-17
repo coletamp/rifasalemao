@@ -30,6 +30,7 @@ async function gerarChavePix(valor) {
           },
         ],
         payment_methods: {
+          default_payment_method_id: "pix",  // Definindo PIX como o método de pagamento
           excluded_payment_types: [
             {
               id: "ticket", // Exclui outros métodos como boletos, por exemplo
