@@ -923,7 +923,7 @@ window.addEventListener('load', function() {
   const pixQrCode = document.getElementById("pixQrCode");
   const copyButton = document.getElementById("copy-pix-key-button");
 
-  let totalValue = parseFloat(totalValueInput.value) || 1;
+  let totalValue = parseFloat(totalValueInput?.value) || 1; // Verificar existência do input
 
   // Função para verificar se o telefone está salvo no localStorage
   const isPhoneSaved = () => localStorage.getItem('userPhone') !== null;
@@ -944,7 +944,7 @@ window.addEventListener('load', function() {
   updateButton();
 
   // Eventos para incrementar e decrementar valor
-  decrementButton.addEventListener("click", () => {
+  decrementButton?.addEventListener("click", () => {
     if (totalValue > 1) {
       totalValue--;
       totalValueInput.value = totalValue;
@@ -952,16 +952,25 @@ window.addEventListener('load', function() {
     }
   });
 
-  incrementButton.addEventListener("click", () => {
+  incrementButton?.addEventListener("click", () => {
     totalValue++;
     totalValueInput.value = totalValue;
     updateButton();
   });
 
-  totalValueInput.addEventListener("input", () => {
+  totalValueInput?.addEventListener("input", () => {
     totalValue = parseFloat(totalValueInput.value) || 1;
     updateButton();
   });
+
+  // Função para exibir mensagens temporárias
+  const showTemporaryMessage = (container, message, duration = 3000) => {
+    const originalContent = container.textContent;
+    container.textContent = message;
+    setTimeout(() => {
+      container.textContent = originalContent;
+    }, duration);
+  };
 
   // Evento de clique para calcular e gerar chave Pix
   calculateButton.addEventListener("click", async () => {
@@ -974,8 +983,12 @@ window.addEventListener('load', function() {
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
     try {
+      // Desativa o botão enquanto processa
+      calculateButton.textContent = "Processando...";
+      calculateButton.disabled = true;
+
       // Enviar o valor total para o back-end para gerar a chave Pix
-      const response = await fetch("https://seu-backend.com/gerar-chave-pix", {
+      const response = await fetch("https://seu-backend.com/mercado-pago/gerar-pix", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -985,22 +998,26 @@ window.addEventListener('load', function() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        pixKeyContainer.textContent = "Erro ao gerar a chave Pix.";
+        showTemporaryMessage(pixKeyContainer, `Erro: ${errorData.message || "Erro ao gerar a chave Pix."}`);
         console.error("Erro:", errorData);
         return;
       }
 
       const data = await response.json();
-      if (data.txid && data.qrcode && data.imagemQrcode) {
-        pixKeyContainer.textContent = `${data.qrcode}`;
-        pixQrCode.innerHTML = `<img src="${data.imagemQrcode}" alt="QR Code Pix" style="width: 200px;">`;
+      if (data.qrCode && data.qrCodeImage) {
+        pixKeyContainer.textContent = data.qrCode;
+        pixQrCode.innerHTML = `<img src="${data.qrCodeImage}" alt="QR Code Pix" style="width: 200px;">`;
         copyButton.style.display = "inline-block";
       } else {
-        pixKeyContainer.textContent = "Erro ao gerar a chave Pix.";
+        showTemporaryMessage(pixKeyContainer, "Erro ao gerar a chave Pix.");
       }
     } catch (error) {
-      pixKeyContainer.textContent = "Erro ao conectar com o servidor.";
+      showTemporaryMessage(pixKeyContainer, "Erro ao conectar com o servidor.");
       console.error("Erro ao conectar:", error);
+    } finally {
+      // Reativa o botão
+      updateButton();
+      calculateButton.disabled = false;
     }
   });
 
@@ -1014,6 +1031,7 @@ window.addEventListener('load', function() {
     });
   });
 </script>
+
 
 
 
