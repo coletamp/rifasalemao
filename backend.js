@@ -1,80 +1,77 @@
+"use strict";
+const axios = require("axios");
 const express = require("express");
-const mercadopago = require("mercadopago");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
+// Configurações do servidor
 const app = express();
-app.use(express.json()); // Para interpretar o corpo das requisições JSON
+app.use(bodyParser.json());
+app.use(cors());
 
-// Configurar credenciais do Mercado Pago
-mercadopago.configurations.setAccessToken('TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337');
+// Credenciais do Mercado Pago
+const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
 
-// Endpoint para gerar a chave Pix
-app.post("/mercado-pago/gerar-pix", async (req, res) => {
+// Função para gerar chave PIX e QR Code
+async function gerarChavePix(valor) {
   try {
-    const { valor } = req.body; // Valor enviado do frontend
+    console.log("Iniciando a geração da chave PIX com Mercado Pago...");
 
-    // Configurar o pagamento
-    const preference = {
-      items: [
-        {
-          title: "Pagamento via Pix",
-          quantity: 1,
-          unit_price: valor,
-        },
-      ],
-      payment_methods: {
-        excluded_payment_types: [
-          {
-            id: "ticket",
-          },
-        ],
-        default_payment_method: "pix",
+    const config = {
+      method: "POST",
+      url: "https://api.mercadopago.com/v1/payments",
+      headers: {
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
       },
-      back_urls: {
-        success: "https://seusite.com/sucesso",
-        failure: "https://seusite.com/falha",
-        pending: "https://seusite.com/pendente",
+      data: {
+        transaction_amount: valor,
+        description: "Pagamento via PIX",
+        payment_method_id: "pix",
       },
     };
 
-    // Criar a preferência de pagamento
-    const preferenceResponse = await mercadopago.preferences.create(preference);
+    const response = await axios(config);
 
-    // Retornar o QR Code e a chave Pix
-    const paymentLink = preferenceResponse.body.init_point;
-    const qrCodeImage = preferenceResponse.body.qr_code;
+    // Extraindo dados necessários
+    const { point_of_interaction, id } = response.data;
+
+    console.log("Chave PIX gerada com sucesso:", id);
+
+    return {
+      txid: id, // ID da transação
+      qrcode: point_of_interaction.transaction_data.qr_code, // Código QR
+      copiaECola: point_of_interaction.transaction_data.qr_code_base64, // Código PIX Copia e Cola
+    };
+  } catch (error) {
+    console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+// Rota para gerar a chave PIX
+app.post("/gerar-chave-pix", async (req, res) => {
+  try {
+    const { valor } = req.body;
+
+    if (!valor || isNaN(valor)) {
+      return res.status(400).json({ error: "Valor inválido" });
+    }
+
+    const qrcodeData = await gerarChavePix(parseFloat(valor));
+
     res.json({
-      txid: preferenceResponse.body.id,
-      qrcode: paymentLink,
-      imagemQrcode: qrCodeImage,
+      txid: qrcodeData.txid,
+      qrcode: qrcodeData.qrcode,
+      copiaECola: qrcodeData.copiaECola,
     });
   } catch (error) {
-    console.error("Erro ao gerar a chave Pix:", error);
-    res.status(500).json({ message: "Erro ao gerar a chave Pix" });
+    res.status(500).json({ error: "Erro ao gerar chave PIX" });
   }
 });
 
-// Verificação de pagamento (em tempo real)
-app.post("/verificar-pagamento", async (req, res) => {
-  try {
-    const { txid } = req.body; // ID da transação
-
-    // Consultar o status do pagamento
-    const paymentResponse = await mercadopago.payment.get(txid);
-
-    // Verificar o status do pagamento
-    if (paymentResponse.body.status === "approved") {
-      res.json({ status: "CONFIRMED" });
-    } else {
-      res.json({ status: "PENDING" });
-    }
-  } catch (error) {
-    console.error("Erro ao verificar o pagamento:", error);
-    res.status(500).json({ message: "Erro ao verificar o pagamento" });
-  }
-});
-
-// Iniciar o servidor
-const PORT = process.env.PORT || 5000;
+// Iniciando o servidor
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
