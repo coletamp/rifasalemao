@@ -61,15 +61,25 @@ async function gerarChavePix(valor) {
       }
     );
 
+    // Log para verificar a resposta completa da API
+    console.log("Resposta da API do Mercado Pago:", response.data);
+
+    // Verificando se a resposta contém o campo esperado
+    const { point_of_interaction } = response.data;
+
+    if (!point_of_interaction || !point_of_interaction.transaction_data) {
+      throw new Error("Dados de interação PIX não encontrados na resposta.");
+    }
+
     // Extraindo os dados retornados conforme a documentação
-    const { point_of_interaction, id } = response.data;
-    console.log("Chave PIX gerada com sucesso:", id);
+    const { transaction_data } = point_of_interaction;
+    const { qr_code, qr_code_base64, ticket_url } = transaction_data;
 
     return {
-      txid: id,
-      qrcode: point_of_interaction.transaction_data.qr_code,
-      copiaECola: point_of_interaction.transaction_data.qr_code_base64,
-      ticket_url: point_of_interaction.transaction_data.ticket_url,
+      txid: response.data.id,
+      qrcode: qr_code,
+      copiaECola: qr_code_base64,
+      ticket_url: ticket_url,
     };
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
