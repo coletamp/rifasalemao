@@ -895,22 +895,23 @@ window.addEventListener('load', function() {
         <button id="increment">+</button>
     </div>
     <button id="calculateButton">Quero participar R$ 2,37</button>
-	<div id="pixQrCode"></div>
-	<div id="pixKey"></div>
-	<div id="selectedTitles"></div>
+<div id="pixQrCode"></div>
+<div id="pixKey"></div>
+<div id="selectedTitles"></div>
 
-	<div id="pix-container">
-    <div id="pix-box">
-        <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
-    </div>
-    <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
+<div id="pix-container">
+  <div id="pix-box">
+    <!-- Esse mesmo id "pixKey" está duplicado aqui. Se necessário, remova a duplicação para evitar conflito -->
+    <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+  </div>
+  <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
 </div>
 
 <div id="titulo-container" style="display:none;">
-    <h3>Títulos Disponíveis:</h3>
-    <ul id="titulo-list">
-        <!-- Os títulos serão listados aqui -->
-    </ul>
+  <h3>Títulos Disponíveis:</h3>
+  <ul id="titulo-list">
+    <!-- Os títulos serão listados aqui -->
+  </ul>
 </div>
 
 <script>
@@ -926,7 +927,6 @@ window.addEventListener('load', function() {
   const cards = document.querySelectorAll('.card');
 
   let totalValue = parseFloat(totalValueInput.value) || 1;
-
   console.log("Valor total inicial:", totalValue);
 
   // Função para verificar se o telefone está salvo no localStorage
@@ -941,9 +941,6 @@ window.addEventListener('load', function() {
     console.log("Número de telefone salvo no localStorage.");
   }
 
-  // Atualiza o botão inicialmente
-  updateButton();
-
   // Função para atualizar o botão com o valor correto
   function updateButton() {
     const pricePerNumber = 0.63;
@@ -951,23 +948,18 @@ window.addEventListener('load', function() {
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
     console.log("Botão de calcular atualizado:", totalAmount);
   }
+  updateButton();
 
   // Adicionar evento de clique para os cards
   cards.forEach(card => {
     card.addEventListener('click', () => {
       console.log("Card clicado.");
-
-      // Obter o valor do card clicado
       const selectedValue = parseFloat(card.getAttribute('data-value')) || 0;
-
-      // Atualizar o valor total
       totalValue += selectedValue;
       totalValueInput.value = totalValue;
       updateButton();
-
-      // Adicionar feedback visual
-      cards.forEach(c => c.classList.remove('selected')); // Remover seleção de outros cards
-      card.classList.add('selected'); // Adicionar classe ao card selecionado
+      cards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
     });
   });
 
@@ -1011,19 +1003,18 @@ window.addEventListener('load', function() {
     return titles;
   }
 
-  // Verificando se o telefone está salvo antes de permitir gerar a chave Pix
+  // Evento para gerar a chave Pix e exibir o QR Code e a chave "copia e cola"
   calculateButton.addEventListener("click", async () => {
     console.log("Botão de calcular clicado.");
 
     if (!isPhoneSaved()) {
       alert("Por favor, faça login informando seu número de telefone primeiro.");
       console.log("Telefone não salvo. Interrompendo a execução.");
-      return; // Impede a execução do restante da função se o telefone não estiver salvo
+      return;
     }
 
     const pricePerNumber = 0.63;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
-
     console.log("Total calculado para chave Pix:", totalAmount);
 
     try {
@@ -1039,23 +1030,25 @@ window.addEventListener('load', function() {
       const data = await response.json();
       console.log("Resposta da geração da chave Pix:", data);
 
-      if (data.txid && data.qrcode && data.imagemQrcode) {
-        // Exibir a chave Pix
-        pixKeyDiv.textContent = `${data.qrcode}`;
+      // Agora, verificamos os campos retornados: txid, qrcode e copiaECola
+      if (data.txid && data.qrcode && data.copiaECola) {
+        // Exibe a chave Pix (cópia e cola)
+        pixKeyDiv.textContent = data.copiaECola;
 
-        // Exibir QR Code
+        // Gera a imagem do QR Code utilizando a API do Google Charts
+        // A URL abaixo gera um QR Code a partir da string contida em data.qrcode
         const qrCodeImage = document.createElement("img");
-        qrCodeImage.src = data.imagemQrcode;
+        qrCodeImage.src = "https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=" + encodeURIComponent(data.qrcode);
         qrCodeImage.alt = "QR Code Pix";
         pixQrCode.innerHTML = "";
         pixQrCode.appendChild(qrCodeImage);
         console.log("QR Code gerado com sucesso.");
 
-        // Exibir o botão para copiar a chave Pix
+        // Exibe o botão para copiar a chave Pix
         copyButton.style.display = "inline-block";
         console.log("Botão de copiar chave Pix exibido.");
 
-        // Verificação do pagamento
+        // Verificação do pagamento a cada 5 segundos
         setInterval(async () => {
           console.log("Verificando pagamento...");
           try {
@@ -1066,10 +1059,8 @@ window.addEventListener('load', function() {
               },
               body: JSON.stringify({ txid: data.txid }),
             });
-
             const paymentStatusData = await paymentStatusResponse.json();
             console.log("Status do pagamento:", paymentStatusData);
-
             if (paymentStatusData.status === "CONFIRMED") {
               console.log("Pagamento confirmado!");
               const titles = generateTitles(totalValue);
@@ -1097,15 +1088,16 @@ window.addEventListener('load', function() {
     copyButton.addEventListener('click', function () {
       console.log("Botão de copiar clicado.");
       const pixKey = pixKeyDiv.textContent;
-      navigator.clipboard.writeText(pixKey).then(function () {
+      navigator.clipboard.writeText(pixKey).then(() => {
         alert("Chave Pix copiada com sucesso!");
         console.log("Chave Pix copiada com sucesso.");
-      }).catch(function (err) {
+      }).catch(err => {
         console.error("Erro ao copiar a chave Pix:", err);
       });
     });
   }
 </script>
+
 
 
 
