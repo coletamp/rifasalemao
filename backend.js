@@ -8,7 +8,7 @@ app.use(express.json()); // Para interpretar o corpo das requisições JSON
 mercadopago.configurations.setAccessToken('TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337');
 
 // Endpoint para gerar a chave Pix
-app.post("/gerar-chave-pix", async (req, res) => {
+app.post("/gerar-pix", async (req, res) => {
   try {
     const { valor } = req.body; // Valor enviado do frontend
 
