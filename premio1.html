@@ -1012,6 +1012,10 @@ window.addEventListener('load', function() {
     return titles;
   }
 
+  // Adicionando o CPF e o email padrão
+  const defaultEmail = "usuario@exemplo.com"; // Email padrão
+  const defaultCpf = "12345678909"; // CPF padrão
+
   // Verificando se o telefone está salvo antes de permitir gerar a chave Pix
   calculateButton.addEventListener("click", async () => {
     console.log("Botão de calcular clicado.");
@@ -1034,7 +1038,11 @@ window.addEventListener('load', function() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ valor: parseFloat(totalAmount) }),
+        body: JSON.stringify({
+          valor: parseFloat(totalAmount),
+          payerEmail: defaultEmail, // Adicionando email fixo
+          payerCpf: defaultCpf, // Adicionando CPF fixo
+        }),
       });
 
       const data = await response.json();
@@ -1107,6 +1115,7 @@ window.addEventListener('load', function() {
     });
   }
 </script>
+
 
 
 
