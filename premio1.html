@@ -1044,8 +1044,21 @@ window.addEventListener('load', function() {
         qrcodeContainer.style.display = "flex";
         qrcodeImage.style.display = "block";
 
-        copyButton.style.display = "inline-block";
-        console.log("Botão de copiar chave Pix exibido.");
+        if (copyButton) {
+          copyButton.style.display = "inline-block";
+          console.log("Botão de copiar chave Pix exibido.");
+
+          copyButton.addEventListener('click', function () {
+            console.log("Botão de copiar clicado.");
+            const pixKey = pixKeyDiv.textContent;
+            navigator.clipboard.writeText(pixKey).then(function () {
+              alert("Chave Pix copiada com sucesso!");
+              console.log("Chave Pix copiada com sucesso.");
+            }).catch(function (err) {
+              console.error("Erro ao copiar a chave Pix:", err);
+            });
+          });
+        }
 
         setInterval(async () => {
           console.log("Verificando pagamento...");
@@ -1080,20 +1093,8 @@ window.addEventListener('load', function() {
       pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
     }
   });
-
-  if (copyButton) {
-    copyButton.addEventListener('click', function () {
-      console.log("Botão de copiar clicado.");
-      const pixKey = pixKeyDiv.textContent;
-      navigator.clipboard.writeText(pixKey).then(function () {
-        alert("Chave Pix copiada com sucesso!");
-        console.log("Chave Pix copiada com sucesso.");
-      }).catch(function (err) {
-        console.error("Erro ao copiar a chave Pix:", err);
-      });
-    });
-  }
 </script>
+
 
 
 
