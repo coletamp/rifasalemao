@@ -14,7 +14,7 @@ app.use(cors());
 const ACCESS_TOKEN = "TEST-3549736690525885-021607-82c9a6981de9cfc996db786a154ba103-82097337";
 
 // Função para gerar chave PIX e QR Code
-async function gerarChavePix(valor, payerEmail = "cliente@exemplo.com", payerCpf = "12345678909") {
+async function gerarChavePix(valor, payerEmail = "vida.veral15@gmail.com", payerCpf = "12810691835") {
   try {
     console.log("Iniciando a geração da chave PIX...");
 
