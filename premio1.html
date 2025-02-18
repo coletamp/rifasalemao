@@ -1048,7 +1048,7 @@ window.addEventListener('load', function() {
 
       if (data.txid && data.qrcode && data.copiaECola) {
         // Exibir a chave Pix
-        pixKeyDiv.textContent = `Chave Pix: ${data.txid}`;
+        pixKeyDiv.textContent = `Chave Pix: ${data.qrcode}`;
 
         // Substituindo 'copiaecolaaqui' pelo valor de copiaECola da resposta
         qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
