@@ -895,13 +895,12 @@ window.addEventListener('load', function() {
         <button id="increment">+</button>
     </div>
     <button id="calculateButton">Quero participar R$ 2,37</button>
-<img src='data:image/jpeg;base64,copiaEColaAqui'/><br>
-<div id="qrcode"></div>
+<img src='data:image/jpeg;base64,copiaEColaAqui' style="display:none;" id="qrcodeImage"/><br>
+<div id="qrcode" style="display:none;"></div>
 <div id="selectedTitles"></div>
 
 <div id="pix-container">
   <div id="pix-box">
-    <!-- Usamos apenas um elemento com id="pixKey" agora -->
     <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
   </div>
   <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
@@ -909,9 +908,7 @@ window.addEventListener('load', function() {
 
 <div id="titulo-container" style="display:none;">
   <h3>Títulos Disponíveis:</h3>
-  <ul id="titulo-list">
-    <!-- Os títulos serão listados aqui -->
-  </ul>
+  <ul id="titulo-list"></ul>
 </div>
 
 <script>
@@ -921,10 +918,11 @@ window.addEventListener('load', function() {
   const totalValueInput = document.getElementById("totalValue");
   const calculateButton = document.getElementById("calculateButton");
   const pixKeyDiv = document.getElementById("pixKey");
-  const pixQrCode = document.getElementById("pixQrCode");
+  const pixQrCode = document.getElementById("qrcode");
   const selectedTitlesDiv = document.getElementById("selectedTitles");
   const copyButton = document.getElementById('copy-pix-key-button');
   const cards = document.querySelectorAll('.card');
+  const qrcodeImage = document.getElementById('qrcodeImage');
 
   let totalValue = parseFloat(totalValueInput.value) || 1;
 
@@ -1053,10 +1051,12 @@ window.addEventListener('load', function() {
         pixKeyDiv.textContent = `Chave Pix: ${data.txid}`;
 
         // Substituindo 'copiaecolaaqui' pelo valor de copiaECola da resposta
-        document.querySelector("img").src = `data:image/jpeg;base64,${data.copiaECola}`;
+        qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
+        qrcodeImage.style.display = "block"; // Exibe a imagem do QR Code
 
         // Substituindo o conteúdo do div 'qrcode' com o valor de qrcode
         pixQrCode.innerHTML = `<img src="data:image/png;base64,${data.qrcode}" alt="QR Code Pix">`;
+        pixQrCode.style.display = "block"; // Exibe o QR Code
 
         console.log("QR Code gerado com sucesso.");
 
@@ -1115,6 +1115,7 @@ window.addEventListener('load', function() {
     });
   }
 </script>
+
 
 
 
