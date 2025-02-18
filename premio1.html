@@ -1038,7 +1038,7 @@ window.addEventListener('load', function() {
       console.log("Resposta da geração da chave Pix:", data);
 
       if (data.txid && data.qrcode && data.copiaECola) {
-        pixKeyDiv.textContent = `Chave Pix: ${data.qrcode}`;
+        pixKeyDiv.textContent = `${data.qrcode}`;
 
         qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
         if (qrcodeContainer) {
