@@ -45,7 +45,11 @@ async function gerarChavePix(valor, payerEmail = "cliente@exemplo.com", payerCpf
       }
     );
 
-    // Extraindo dados necessários
+    // Verificação da resposta para garantir que contém os dados necessários
+    if (!response.data || !response.data.point_of_interaction || !response.data.point_of_interaction.transaction_data) {
+      throw new Error("Dados do pagamento não retornados corretamente");
+    }
+
     const { point_of_interaction, id } = response.data;
 
     console.log("Chave PIX gerada com sucesso:", id);
@@ -66,10 +70,16 @@ app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor, payerEmail, payerCpf } = req.body;
 
-    if (!valor || isNaN(valor)) {
+    // Validação de entrada
+    if (!valor || isNaN(valor) || valor <= 0) {
       return res.status(400).json({ error: "Valor inválido" });
     }
 
+    if (!payerEmail || !payerCpf) {
+      return res.status(400).json({ error: "Email ou CPF não fornecidos" });
+    }
+
+    // Chama a função para gerar a chave PIX
     const qrcodeData = await gerarChavePix(parseFloat(valor), payerEmail, payerCpf);
 
     res.json({
@@ -78,12 +88,13 @@ app.post("/gerar-chave-pix", async (req, res) => {
       copiaECola: qrcodeData.copiaECola,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Iniciando o servidor
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
