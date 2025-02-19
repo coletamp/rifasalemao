@@ -93,6 +93,39 @@ app.post("/gerar-chave-pix", async (req, res) => {
   }
 });
 
+// Rota para receber notificações de pagamento
+app.post("/webhook", async (req, res) => {
+  try {
+    const paymentData = req.body;
+
+    // Verifique se a notificação é sobre um pagamento aprovado
+    if (paymentData.type === "payment" && paymentData.data && paymentData.data.id) {
+      const paymentId = paymentData.data.id;
+
+      // Faça uma requisição à API do Mercado Pago para obter detalhes do pagamento
+      const response = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+        },
+      });
+
+      const paymentInfo = response.data;
+
+      if (paymentInfo.status === "approved") {
+        // Lógica para gerar e exibir os números comprados
+        // Substitua esta parte pelo seu código específico
+        console.log("Pagamento aprovado. Gerar números para o usuário.");
+      }
+    }
+
+    // Responda com status 200 para confirmar o recebimento da notificação
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Erro ao processar webhook:", error);
+    res.sendStatus(500);
+  }
+});
+
 // Iniciando o servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
