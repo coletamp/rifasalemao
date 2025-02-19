@@ -931,7 +931,7 @@ window.addEventListener('load', function() {
   let totalValue = parseFloat(totalValueInput?.value) || 1;
 
   function updateButton() {
-    const pricePerNumber = 0.63;
+    const pricePerNumber = 0.45;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
     console.log("Botão de calcular atualizado:", totalAmount);
@@ -966,7 +966,7 @@ window.addEventListener('load', function() {
   }
 
   calculateButton.addEventListener("click", async () => {
-    const pricePerNumber = 0.63;
+    const pricePerNumber = 0.45;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
     try {
