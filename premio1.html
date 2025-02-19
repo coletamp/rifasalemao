@@ -989,7 +989,7 @@ window.addEventListener('load', function() {
 
         const paymentChecker = setInterval(async () => {
           try {
-            const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
+            const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/webhook", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ txid: data.txid }),
