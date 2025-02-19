@@ -894,6 +894,29 @@ window.addEventListener('load', function() {
         <input id="totalValue" type="number" value="5" min="1">
         <button id="increment">+</button>
     </div>
+	    >Quero participar R$ 2,37</button> 
+<div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
+  <img 
+    width="250" 
+    height="250" 
+    src='data:image/jpeg;base64,copiaEColaAqui' 
+    style="display: none;" 
+    id="qrcodeImage"
+  />
+</div> 
+<div id="selectedTitles"></div>
+
+<div id="pix-container">
+  <div id="pix-box">
+    <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+  </div> <br>
+  <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
+</div>
+
+<div id="titulo-container" style="display:none;">
+  <h3>Títulos Disponíveis:</h3>
+  <ul id="titulo-list"></ul>
+</div>
     <script>
   // Selecionando os elementos principais
   const calculateButton = document.getElementById("calculateButton");
