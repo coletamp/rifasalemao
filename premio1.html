@@ -894,22 +894,22 @@ window.addEventListener('load', function() {
         <input id="totalValue" type="number" value="5" min="1">
         <button id="increment">+</button>
     </div>
-	<button id="calculateButton">Quero participar R$ 2,37</button> 
+	<button id="calculateButton">Quero participar R$ 2,37</button>
 <div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
   <img 
     width="250" 
     height="250" 
-    src='data:image/jpeg;base64,copiaEColaAqui' 
+    src="" 
     style="display: none;" 
     id="qrcodeImage"
   />
-</div> 
+</div>
 <div id="selectedTitles"></div>
 
 <div id="pix-container">
   <div id="pix-box">
     <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
-  </div> <br>
+  </div><br>
   <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
 </div>
 
@@ -917,38 +917,56 @@ window.addEventListener('load', function() {
   <h3>Títulos Disponíveis:</h3>
   <ul id="titulo-list"></ul>
 </div>
-    <script>
-  // Selecionando os elementos principais
+
+<script>
+  const decrementButton = document.getElementById("decrement");
+  const incrementButton = document.getElementById("increment");
+  const totalValueInput = document.getElementById("totalValue");
   const calculateButton = document.getElementById("calculateButton");
   const pixKeyDiv = document.getElementById("pixKey");
   const selectedTitlesDiv = document.getElementById("selectedTitles");
-  const copyButton = document.getElementById("copy-pix-key-button");
+  const copyButton = document.getElementById('copy-pix-key-button');
   const qrcodeImage = document.getElementById('qrcodeImage');
-  const qrcodeContainer = document.getElementById('qrcodeContainer');
 
-  let totalValue = 1; // Quantidade de números selecionados pelo usuário
+  let totalValue = parseFloat(totalValueInput?.value) || 1;
 
   function updateButton() {
-    const pricePerNumber = 2.37; // Valor por número
+    const pricePerNumber = 0.63;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
+    console.log("Botão de calcular atualizado:", totalAmount);
   }
 
-  function generateRandomTitles(quantity) {
-    const maxNumber = 9999999;
-    const minNumber = 1;
-    const numbersSet = new Set();
-
-    while (numbersSet.size < quantity) {
-      const randomNum = Math.floor(Math.random() * (maxNumber - minNumber + 1)) + minNumber;
-      numbersSet.add(randomNum.toString().padStart(7, "0"));
+  decrementButton?.addEventListener("click", () => {
+    if (totalValue > 1) {
+      totalValue--;
+      totalValueInput.value = totalValue;
+      updateButton();
     }
+  });
 
-    return Array.from(numbersSet);
+  incrementButton?.addEventListener("click", () => {
+    totalValue++;
+    totalValueInput.value = totalValue;
+    updateButton();
+  });
+
+  totalValueInput?.addEventListener("input", () => {
+    totalValue = parseFloat(totalValueInput.value) || 1;
+    updateButton();
+  });
+
+  function generateRandomTitles(quantity) {
+    const titles = new Set();
+    while (titles.size < quantity) {
+      const randomNumber = Math.floor(Math.random() * 9999999) + 1;
+      titles.add(randomNumber.toString().padStart(7, "0"));
+    }
+    return Array.from(titles);
   }
 
   calculateButton.addEventListener("click", async () => {
-    const pricePerNumber = 2.37;
+    const pricePerNumber = 0.63;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
     try {
@@ -963,37 +981,28 @@ window.addEventListener('load', function() {
       });
 
       const data = await response.json();
-
       if (data.txid && data.qrcode && data.copiaECola) {
-        pixKeyDiv.textContent = `${data.qrcode}`;
+        pixKeyDiv.textContent = data.qrcode;
         qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
         qrcodeImage.style.display = "block";
         copyButton.style.display = "inline-block";
 
-        const paymentCheckInterval = setInterval(async () => {
+        const paymentChecker = setInterval(async () => {
           try {
-            const paymentStatusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
+            const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-pagamento", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ txid: data.txid }),
             });
 
-            const paymentStatusData = await paymentStatusResponse.json();
-
-            if (paymentStatusData.status === "CONFIRMED") {
-              clearInterval(paymentCheckInterval);
-
-              // Geração de títulos aleatórios
+            const statusData = await statusResponse.json();
+            if (statusData.status === "CONFIRMED") {
+              clearInterval(paymentChecker);
               const titles = generateRandomTitles(totalValue);
-
-              // Atualização da interface
               selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
-              selectedTitlesDiv.style.display = "block";
-
-              // Ocultando as informações de Pix
-              pixKeyDiv.textContent = "";
-              qrcodeImage.style.display = "none";
+              pixKeyDiv.style.display = "none";
               copyButton.style.display = "none";
+              qrcodeImage.style.display = "none";
             }
           } catch (error) {
             console.error("Erro ao verificar o pagamento:", error);
@@ -1003,23 +1012,20 @@ window.addEventListener('load', function() {
         pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
       }
     } catch (error) {
-      pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
       console.error("Erro ao conectar com o servidor:", error);
+      pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
     }
   });
 
-  copyButton.addEventListener('click', function () {
-    const pixKey = pixKeyDiv.textContent;
-    navigator.clipboard.writeText(pixKey).then(() => {
+  copyButton?.addEventListener("click", () => {
+    navigator.clipboard.writeText(pixKeyDiv.textContent).then(() => {
       alert("Chave Pix copiada com sucesso!");
     }).catch(err => {
       console.error("Erro ao copiar a chave Pix:", err);
     });
   });
-
-  // Inicializando o botão com o valor inicial
-  updateButton();
 </script>
+
 
 
 
