@@ -925,8 +925,8 @@ window.addEventListener('load', function() {
   const calculateButton = document.getElementById("calculateButton");
   const pixKeyDiv = document.getElementById("pixKey");
   const selectedTitlesDiv = document.getElementById("selectedTitles");
-  const copyButton = document.getElementById('copy-pix-key-button');
-  const qrcodeImage = document.getElementById('qrcodeImage');
+  const copyButton = document.getElementById("copy-pix-key-button");
+  const qrcodeImage = document.getElementById("qrcodeImage");
 
   let totalValue = parseFloat(totalValueInput?.value) || 1;
 
@@ -934,7 +934,6 @@ window.addEventListener('load', function() {
     const pricePerNumber = 0.45;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
-    console.log("Botão de calcular atualizado:", totalAmount);
   }
 
   decrementButton?.addEventListener("click", () => {
@@ -989,14 +988,14 @@ window.addEventListener('load', function() {
 
         const paymentChecker = setInterval(async () => {
           try {
-            const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/webhook", {
+            const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-status", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ txid: data.txid }),
             });
 
             const statusData = await statusResponse.json();
-            if (statusData.status === "CONFIRMED") {
+            if (statusData.status === "approved") {
               clearInterval(paymentChecker);
               const titles = generateRandomTitles(totalValue);
               selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
@@ -1025,6 +1024,7 @@ window.addEventListener('load', function() {
     });
   });
 </script>
+
 
 
 
