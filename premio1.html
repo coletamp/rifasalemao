@@ -998,7 +998,7 @@ window.addEventListener('load', function() {
             if (statusData.status === "approved") {
               clearInterval(paymentChecker);
               const titles = generateRandomTitles(totalValue);
-              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.filter(title => title !== "0000001" && title !== "0000002" && title !== ").map(title => `<li>${title}</li>`).join("")}</ul>`;
+              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.filter(title => title !== "0000001" && title !== "0000002").map(title => `<li>${title}</li>`).join("")}</ul>`;
               pixKeyDiv.style.display = "none";
               copyButton.style.display = "none";
               qrcodeImage.style.display = "none";
