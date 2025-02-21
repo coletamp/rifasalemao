@@ -9,6 +9,6 @@
     "https": "^1.0.0",
     "uuid": "^9.0.0",
     "sdk-node-apis-efi": "^1.2.14"
-    "uuid": "^9.0.0" // ou outra versão estável
+    "uuid": "^9.0.0" 
   }
 }
