@@ -9,7 +9,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const ACCESS_TOKEN = "APP_USR-3549736690525885-021607-bca529f437594d48d37d59397195c4ad-82097337";
+const ACCESS_TOKEN = "APP_USR-7155153166578433-022021-bb77c63cb27d3d05616d5c08e09077cf-502781407";
 
 async function gerarChavePix(valor, payerEmail, payerCpf) {
   try {
