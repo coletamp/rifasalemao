@@ -17,6 +17,7 @@ if (!fs.existsSync(PAGAMENTOS_FILE)) {
   fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify([]));
 }
 
+// Função para gerar a chave PIX
 async function gerarChavePix(valor, payerEmail, payerCpf) {
   try {
     const idempotencyKey = uuidv4();
@@ -58,6 +59,7 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
   }
 }
 
+// Rota para gerar a chave PIX e salvar o pagamento
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor, payerEmail, payerCpf } = req.body;
@@ -78,15 +80,39 @@ app.post("/gerar-chave-pix", async (req, res) => {
   }
 });
 
+// Função para atualizar o status dos pagamentos
+async function atualizarStatusPagamentos() {
+  try {
+    const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
+
+    for (const pagamento of pagamentos) {
+      if (pagamento.status !== "approved") {
+        const response = await axios.get(`https://api.mercadopago.com/v1/payments/${pagamento.txid}`, {
+          headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+        });
+
+        pagamento.status = response.data.status; // Atualiza o status
+      }
+    }
+
+    fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
+  } catch (error) {
+    console.error("Erro ao atualizar status dos pagamentos:", error.message);
+  }
+}
+
+// Rota para obter apenas pagamentos aprovados
 app.get("/pagamentos", (req, res) => {
   try {
     const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
-    res.json(pagamentos);
+    const pagamentosPagos = pagamentos.filter((p) => p.status === "approved");
+    res.json(pagamentosPagos);
   } catch (error) {
     res.status(500).json({ error: "Erro ao carregar pagamentos" });
   }
 });
 
+// Rota para verificar o status de um pagamento manualmente
 app.post("/verificar-status", async (req, res) => {
   try {
     const { txid } = req.body;
@@ -111,6 +137,9 @@ app.post("/verificar-status", async (req, res) => {
     res.status(500).json({ error: "Erro ao verificar status do pagamento" });
   }
 });
+
+// Configuração para atualizar automaticamente os pagamentos a cada 60 segundos
+setInterval(atualizarStatusPagamentos, 60000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
