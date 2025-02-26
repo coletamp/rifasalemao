@@ -655,71 +655,141 @@
         </div>
     </div>
 </header>
-
-<!-- Modal -->
-<div id="modal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000;">
-    <div class="modal-content" style="background: #2b2b2b; border-radius: 10px; width: 300px; padding: 20px; text-align: center; color: white; position: relative; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
-        <span class="close-button" id="closeButton" style="position: absolute; top: 10px; right: 10px; cursor: pointer; color: white; font-size: 20px;">×</span>
-        <input type="text" id="phoneInput" placeholder="Telefone*" maxlength="15" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #555; border-radius: 5px; background: #444; color: white;">
-        <div style="background: #ffc107; color: black; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px;">
-            Informe seu telefone para continuar
+        <!-- Modal -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="closeButton">×</span>
+                <p>Você ainda não adquiriu nenhum Título</p>
+                <button id="showPhoneButton">Informar Telefone</button>
+                <div id="phoneForm" style="display: none;">
+                    <input type="text" id="phoneInput" placeholder="(11) 11111-1111" maxlength="15" />
+                    <button id="continueButton">Continuar</button>
+                </div>
+            </div>
         </div>
-        <button id="continueButton" style="width: 100%; padding: 10px; background: #e63946; border: none; border-radius: 5px; color: white; font-size: 16px; cursor: pointer;">Continuar</button>
-    </div>
-</div>
+    <script>
+        const modal = document.getElementById('modal');
+const closeButton = document.getElementById('closeButton');
+const menuLink = document.querySelector('a[href="#numeros"]');
+const showPhoneButton = document.getElementById('showPhoneButton');
+const phoneForm = document.getElementById('phoneForm');
+const phoneInput = document.getElementById('phoneInput');
+const entrarButton = document.getElementById('entrarButton');
+const sairButton = document.getElementById('sairButton');
+const modalMessage = document.querySelector('.modal-content p');
+const userPhone = document.getElementById('userPhone');
+const userPhoneText = document.getElementById('userPhoneText');
 
-<script>
-    const modal = document.getElementById('modal');
-    const closeButton = document.getElementById('closeButton');
-    const entrarButton = document.getElementById('entrarButton');
-    const phoneInput = document.getElementById('phoneInput');
-    const continueButton = document.getElementById('continueButton');
+// Inicialmente, ocultar o botão "Informar Telefone" e o formulário de telefone
+showPhoneButton.style.display = 'none';
+phoneForm.style.display = 'none';
 
-    // Função para abrir o modal ao clicar no botão "Entrar"
-    entrarButton.addEventListener('click', function() {
-        modal.style.display = 'flex';
-    });
+// Função para abrir o modal ao clicar no link "Meus Títulos"
+menuLink.addEventListener('click', function(event) {
+    event.preventDefault();
+    modal.style.display = 'flex';
+    modalMessage.style.display = 'block';
+    showPhoneButton.style.display = 'none';
+    phoneForm.style.display = 'none';
+});
 
-    // Função para fechar o modal
-    closeButton.addEventListener('click', function() {
+// Função para abrir o modal ao clicar no botão "Entrar"
+entrarButton.addEventListener('click', function() {
+    modal.style.display = 'flex';
+    modalMessage.style.display = 'none';
+    showPhoneButton.style.display = 'block';
+    phoneForm.style.display = 'none';
+});
+
+// Função para exibir o formulário de telefone
+showPhoneButton.addEventListener('click', function() {
+    phoneForm.style.display = 'block';
+});
+
+// Função para fechar o modal
+closeButton.addEventListener('click', function() {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target === modal) {
         modal.style.display = 'none';
-    });
+    }
+});
 
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
+// Máscara para o campo de telefone
+phoneInput.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 11) {
+        value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    } else if (value.length >= 6) {
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+    } else if (value.length >= 3) {
+        value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+    } else if (value.length > 0) {
+        value = value.replace(/^(\d{0,2})$/, '($1');
+    }
+    e.target.value = value;
+});
 
-    // Máscara para o campo de telefone
-    phoneInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length >= 11) {
-            value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-        } else if (value.length >= 6) {
-            value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
-        } else if (value.length >= 3) {
-            value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
-        } else if (value.length > 0) {
-            value = value.replace(/^(\d{0,2})$/, '($1');
-        }
-        e.target.value = value;
-    });
+// Função para capturar o número de telefone e atualizar o menu
+const continueButton = document.getElementById('continueButton');
 
-    // Captura o número de telefone e fecha o modal
-    continueButton.addEventListener('click', function() {
-        const phoneNumber = phoneInput.value.trim();
+continueButton.addEventListener('click', function() {
+    const phoneNumber = phoneInput.value.trim();
 
-        if (phoneNumber) {
-            alert(`Telefone informado: ${phoneNumber}`); // Exibe uma mensagem para teste
-            modal.style.display = 'none';
-        } else {
-            alert('Por favor, informe um número de telefone válido.');
-        }
-    });
-</script>
-</body>
+    if (phoneNumber) {
+        // Armazenar o número no localStorage
+        localStorage.setItem('userPhone', phoneNumber);
 
+        userPhoneText.textContent = `Usuário: ${phoneNumber}`;
+        userPhone.style.display = 'flex';
+        entrarButton.style.display = 'none';
+        sairButton.style.display = 'block';
+        modal.style.display = 'none';
+    } else {
+        alert('Por favor, informe um número de telefone válido.');
+    }
+});
+
+// Função para remover o usuário e mostrar o botão "Entrar"
+sairButton.addEventListener('click', function() {
+    // Limpar o item no localStorage
+    localStorage.removeItem('userPhone');
+    
+    // Atualizar a interface
+    userPhone.style.display = 'none';
+    entrarButton.style.display = 'block';
+    sairButton.style.display = 'none';
+});
+
+// Menu dropdown
+const menuButton = document.getElementById('menuButton');
+const menu = document.getElementById('menu');
+
+menuButton.addEventListener('click', () => {
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', (event) => {
+    if (!menu.contains(event.target) && event.target !== menuButton) {
+        menu.style.display = 'none';
+    }
+});
+
+// Recuperar o número de telefone armazenado ao carregar a página
+window.addEventListener('load', function() {
+    const storedPhone = localStorage.getItem('userPhone');  // Recupera o número de telefone do localStorage
+
+    if (storedPhone) {
+        // Se o número estiver no localStorage, exiba as informações do usuário
+        userPhoneText.textContent = `Usuário: ${storedPhone}`;
+        userPhone.style.display = 'flex';
+        entrarButton.style.display = 'none';
+        sairButton.style.display = 'block';
+    }
+});
+    </script>
 
     </header>
 		<body>
@@ -738,7 +808,7 @@
             <p class="campaign-description">Participe e concorra!</p>
             <p class="footer footer-bold">15414.600117/2025-60</p>
             <button class="cta">Adquira Já!</button>
-            <p class="footer footer-right">📅 08/02/2025 às 18:55</p>
+            <p class="footer footer-right">📅 25/02/2025 às 18:55</p>
         </div>
     </div>
 </div>
@@ -753,7 +823,7 @@
         <div class="right-content">
             <span>Por apenas</span>
             <div class="strong-container">
-                <strong>R$ 0,45</strong>
+                <strong>R$ 0,39</strong>
             </div>
         </div>
     </div>
@@ -861,7 +931,7 @@
   let totalValue = parseFloat(totalValueInput?.value) || 1;
 
   function updateButton() {
-    const pricePerNumber = 0.45;
+    const pricePerNumber = 0.39;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
   }
@@ -912,11 +982,11 @@
       return;
     }
 
-    const pricePerNumber = 0.45;
+    const pricePerNumber = 0.39;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
     try {
-      const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
+      const response = await fetch("https://rifas-3c8k.onrender.com/gerar-chave-pix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -935,7 +1005,7 @@
 
         const paymentChecker = setInterval(async () => {
           try {
-            const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/verificar-status", {
+            const statusResponse = await fetch("https://rifas-3c8k.onrender.com/verificar-status", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ txid: data.txid }),
