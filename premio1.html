@@ -721,16 +721,28 @@
 </header>
         <!-- Modal -->
         <div id="modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" id="closeButton">×</span>
-                <p>Você ainda não adquiriu nenhum Título</p>
-                <button id="showPhoneButton">Informar Telefone</button>
-                <div id="phoneForm" style="display: none;">
-                    <input type="text" id="phoneInput" placeholder="(11) 11111-1111" maxlength="15" />
-                    <button id="continueButton">Continuar</button>
-                </div>
-            </div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="icon">🔑</span>
+            <h2>Login</h2>
+            <span class="close-button" id="closeButton">×</span>
         </div>
+        <div class="modal-body">
+            <input
+                type="text"
+                id="phoneInput"
+                class="phone-input"
+                placeholder="Telefone*"
+                maxlength="15"
+            />
+            <div class="alert">
+                <span class="alert-icon">⚠️</span> Informe seu telefone para continuar
+            </div>
+            <button id="continueButton" class="continue-button">Continuar</button>
+        </div>
+    </div>
+</div>
+
     <script>
         const modal = document.getElementById('modal');
 const closeButton = document.getElementById('closeButton');
