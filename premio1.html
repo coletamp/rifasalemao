@@ -743,7 +743,7 @@
     </div>
 </div>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("modal");
     const closeButton = document.getElementById("closeButton");
     const phoneInput = document.getElementById("phoneInput");
@@ -752,10 +752,21 @@
     const userPhoneText = document.getElementById("userPhoneText");
     const entrarButton = document.getElementById("entrarButton");
     const sairButton = document.getElementById("sairButton");
+    const menuButton = document.getElementById("menuButton"); // Botão do menu
+    const menu = document.getElementById("menu"); // Menu a ser exibido/ocultado
 
     // Inicializar a interface
     if (userPhone) userPhone.style.display = "none";
     if (sairButton) sairButton.style.display = "none";
+
+    // Alternar a visibilidade do menu ao clicar no botão
+    if (menuButton) {
+        menuButton.addEventListener("click", function () {
+            if (menu) {
+                menu.style.display = menu.style.display === "none" || !menu.style.display ? "block" : "none";
+            }
+        });
+    }
 
     // Abrir o modal
     if (entrarButton) {
