@@ -1060,9 +1060,12 @@
 
   calculateButton.addEventListener("click", async () => {
     const phone = localStorage.getItem("userPhone");
+    const modal = document.getElementById("modal");
+
     if (!phone) {
-      alert("Por favor, informe seu telefone antes de prosseguir.");
-      return;
+        // Abre o modal de login caso o telefone não esteja salvo
+        modal.style.display = "flex";
+        return;
     }
 
     const pricePerNumber = 0.39;
