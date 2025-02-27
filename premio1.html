@@ -774,7 +774,17 @@
             // Abrir o modal ao clicar no link "Meus Títulos"
             meusTitulosLink.addEventListener("click", function (event) {
                 event.preventDefault();
-                modal.style.display = "flex";
+
+                // Verificar se o telefone está salvo no localStorage
+                const storedPhone = localStorage.getItem("userPhone");
+
+                if (storedPhone) {
+                    // Exibir mensagem informando que o usuário ainda não possui títulos
+                    alert("Você ainda não possui títulos.");
+                } else {
+                    // Abrir o modal de login
+                    modal.style.display = "flex";
+                }
             });
 
             // Fechar o modal
@@ -860,7 +870,9 @@
         });
     </script>
 </body>
-    </header>
+
+
+</header>
 		<body>
     <div class="container-raio">
         <div class="icon">⚡</div>
