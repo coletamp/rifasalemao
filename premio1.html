@@ -700,158 +700,165 @@
 </head>
 <body>
     <header>
-    <div class="header">
-        <button class="menu-button" id="menuButton">☰</button>
-        <img src="logo.png" alt="Logo Wesley Alemão" class="logo">
-        <div class="menu" id="menu">
-            <div id="userPhone" style="display: none; margin-left: 5px;">
-                <img src="perfil.png" alt="Perfil" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                <span id="userPhoneText"></span>
+        <div class="header">
+            <button class="menu-button" id="menuButton">☰</button>
+            <img src="logo.png" alt="Logo Wesley Alemão" class="logo">
+            <div class="menu" id="menu">
+                <div id="userPhone" style="display: none; margin-left: 5px;">
+                    <img src="perfil.png" alt="Perfil" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                    <span id="userPhoneText"></span>
+                </div>
+                <a href="index.html">🏠 Início</a>
+                <a href="campanhas.html">⚡ Campanhas</a>
+                <a href="#numeros" id="meusTitulosLink">📋 Meus Títulos</a>
+                <a href="ganhadores.html">🎉 Ganhadores</a>
+                <a href="entrar%20em%20contato.html">📧 Entre em contato</a>
+                <a href="termos.html">📜 Termos de uso</a>
+                <button id="entrarButton">Entrar</button>
+                <button id="sairButton" style="display: none;">Sair</button>
             </div>
-            <a href="index.html">🏠 Início</a>
-            <a href="campanhas.html">⚡ Campanhas</a>
-            <a href="#numeros" id="meusTitulosLink">📋 Meus Títulos</a>
-            <a href="ganhadores.html">🎉 Ganhadores</a>
-            <a href="entrar%20em%20contato.html">📧 Entre em contato</a>
-            <a href="termos.html">📜 Termos de uso</a>
-            <button id="entrarButton">Entrar</button>
-            <button id="sairButton" style="display: none;">Sair</button>
+        </div>
+    </header>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="icon">🔑</span>
+                <h2>Login</h2>
+                <span class="close-button" id="closeButton">×</span>
+            </div>
+            <div class="modal-body">
+                <input
+                    type="text"
+                    id="phoneInput"
+                    class="phone-input"
+                    placeholder="Telefone*"
+                    maxlength="15"
+                />
+                <div class="alert">
+                    <span class="alert-icon">⚠️</span> Informe seu telefone para continuar
+                </div>
+                <button id="continueButton" class="continue-button">Continuar</button>
+            </div>
         </div>
     </div>
-</header>
-        <!-- Modal -->
-        <div id="modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <span class="icon">🔑</span>
-            <h2>Login</h2>
-            <span class="close-button" id="closeButton">×</span>
-        </div>
-        <div class="modal-body">
-            <input
-                type="text"
-                id="phoneInput"
-                class="phone-input"
-                placeholder="Telefone*"
-                maxlength="15"
-            />
-            <div class="alert">
-                <span class="alert-icon">⚠️</span> Informe seu telefone para continuar
-            </div>
-            <button id="continueButton" class="continue-button">Continuar</button>
-        </div>
-    </div>
-</div>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const modal = document.getElementById("modal");
-    const closeButton = document.getElementById("closeButton");
-    const phoneInput = document.getElementById("phoneInput");
-    const continueButton = document.getElementById("continueButton");
-    const userPhone = document.getElementById("userPhone");
-    const userPhoneText = document.getElementById("userPhoneText");
-    const entrarButton = document.getElementById("entrarButton");
-    const sairButton = document.getElementById("sairButton");
-    const menuButton = document.getElementById("menuButton");
-    const menu = document.getElementById("menu");
-    const meusTitulosLink = document.getElementById("meusTitulosLink"); // Botão do menu "Meus Títulos"
 
-    // Inicializar a interface
-    if (userPhone) userPhone.style.display = "none";
-    if (sairButton) sairButton.style.display = "none";
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById("modal");
+            const closeButton = document.getElementById("closeButton");
+            const phoneInput = document.getElementById("phoneInput");
+            const continueButton = document.getElementById("continueButton");
+            const userPhone = document.getElementById("userPhone");
+            const userPhoneText = document.getElementById("userPhoneText");
+            const entrarButton = document.getElementById("entrarButton");
+            const sairButton = document.getElementById("sairButton");
+            const menuButton = document.getElementById("menuButton");
+            const menu = document.getElementById("menu");
+            const meusTitulosLink = document.getElementById("meusTitulosLink"); // Botão do menu "Meus Títulos"
 
-    // Alternar a visibilidade do menu ao clicar no botão
-    if (menuButton) {
-        menuButton.addEventListener("click", function () {
-            if (menu) {
-                menu.style.display = menu.style.display === "none" || !menu.style.display ? "block" : "none";
-            }
-        });
-    }
-
-    // Abrir o modal ao clicar no link "Meus Títulos"
-    meusTitulosLink.addEventListener("click", function (event) {
-        event.preventDefault();
-        modal.style.display = "flex";
-    });
-
-    // Fechar o modal
-    closeButton.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
-
-    window.addEventListener("click", function (event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    });
-
-    // Aplicar máscara ao campo de telefone
-    phoneInput.addEventListener("input", function (e) {
-        let value = e.target.value.replace(/\D/g, "");
-        if (value.length >= 11) {
-            value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
-        } else if (value.length >= 6) {
-            value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
-        } else if (value.length >= 3) {
-            value = value.replace(/^(\d{2})(\d{0,5})$/, "($1) $2");
-        } else if (value.length > 0) {
-            value = value.replace(/^(\d{0,2})$/, "($1");
-        }
-        e.target.value = value;
-    });
-
-    // Capturar o número de telefone e atualizar a interface
-    continueButton.addEventListener("click", function () {
-        const phoneNumber = phoneInput.value.trim();
-
-        if (phoneNumber) {
-            // Salvar no localStorage
-            localStorage.setItem("userPhone", phoneNumber);
-
-            // Atualizar a interface
-            if (userPhoneText) {
-                userPhoneText.textContent = `Usuário: ${phoneNumber}`;
-            }
-            if (userPhone) userPhone.style.display = "flex";
-            if (entrarButton) entrarButton.style.display = "none";
-            if (sairButton) sairButton.style.display = "block";
-
-            modal.style.display = "none";
-        } else {
-            alert("Por favor, informe um número de telefone válido.");
-        }
-    });
-
-    // Remover o usuário ao clicar em "Sair"
-    if (sairButton) {
-        sairButton.addEventListener("click", function () {
-            // Limpar o localStorage
-            localStorage.removeItem("userPhone");
-
-            // Atualizar a interface
+            // Inicializar a interface
             if (userPhone) userPhone.style.display = "none";
-            if (entrarButton) entrarButton.style.display = "block";
             if (sairButton) sairButton.style.display = "none";
-        });
-    }
 
-    // Carregar o número de telefone armazenado ao iniciar a página
-    window.addEventListener("load", function () {
-        const storedPhone = localStorage.getItem("userPhone");
-
-        if (storedPhone) {
-            // Se houver um número armazenado, atualize a interface
-            if (userPhoneText) {
-                userPhoneText.textContent = `Usuário: ${storedPhone}`;
+            // Alternar a visibilidade do menu ao clicar no botão
+            if (menuButton) {
+                menuButton.addEventListener("click", function () {
+                    if (menu) {
+                        menu.style.display = menu.style.display === "none" || !menu.style.display ? "block" : "none";
+                    }
+                });
             }
-            if (userPhone) userPhone.style.display = "flex";
-            if (entrarButton) entrarButton.style.display = "none";
-            if (sairButton) sairButton.style.display = "block";
-        }
-    });
-});
-</script>
+
+            // Abrir o modal ao clicar no link "Meus Títulos"
+            meusTitulosLink.addEventListener("click", function (event) {
+                event.preventDefault();
+                modal.style.display = "flex";
+            });
+
+            // Fechar o modal
+            closeButton.addEventListener("click", function () {
+                modal.style.display = "none";
+            });
+
+            window.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    modal.style.display = "none";
+                }
+            });
+
+            // Aplicar máscara ao campo de telefone
+            phoneInput.addEventListener("input", function (e) {
+                let value = e.target.value.replace(/\D/g, "");
+                if (value.length >= 11) {
+                    value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+                } else if (value.length >= 6) {
+                    value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
+                } else if (value.length >= 3) {
+                    value = value.replace(/^(\d{2})(\d{0,5})$/, "($1) $2");
+                } else if (value.length > 0) {
+                    value = value.replace(/^(\d{0,2})$/, "($1");
+                }
+                e.target.value = value;
+            });
+
+            // Capturar o número de telefone e atualizar a interface
+            continueButton.addEventListener("click", function () {
+                const phoneNumber = phoneInput.value.trim();
+
+                if (phoneNumber) {
+                    // Salvar no localStorage
+                    localStorage.setItem("userPhone", phoneNumber);
+
+                    // Atualizar a interface
+                    if (userPhoneText) {
+                        userPhoneText.textContent = `Usuário: ${phoneNumber}`;
+                    }
+                    if (userPhone) userPhone.style.display = "flex";
+                    if (entrarButton) entrarButton.style.display = "none";
+                    if (sairButton) sairButton.style.display = "block";
+
+                    modal.style.display = "none";
+                } else {
+                    alert("Por favor, informe um número de telefone válido.");
+                }
+            });
+
+            // Remover o usuário ao clicar em "Sair"
+            if (sairButton) {
+                sairButton.addEventListener("click", function () {
+                    // Limpar o localStorage
+                    localStorage.removeItem("userPhone");
+
+                    // Atualizar a interface
+                    if (userPhone) userPhone.style.display = "none";
+                    if (entrarButton) entrarButton.style.display = "block";
+                    if (sairButton) sairButton.style.display = "none";
+                });
+            }
+
+            // Carregar o número de telefone armazenado ao iniciar a página
+            window.addEventListener("load", function () {
+                const storedPhone = localStorage.getItem("userPhone");
+
+                if (storedPhone) {
+                    // Se houver um número armazenado, atualize a interface
+                    if (userPhoneText) {
+                        userPhoneText.textContent = `Usuário: ${storedPhone}`;
+                    }
+                    if (userPhone) userPhone.style.display = "flex";
+                    if (entrarButton) entrarButton.style.display = "none";
+                    if (sairButton) sairButton.style.display = "block";
+                }
+            });
+
+            // Abrir o modal de login ao clicar no botão "Entrar"
+            entrarButton.addEventListener("click", function () {
+                modal.style.display = "flex";
+            });
+        });
+    </script>
 </body>
     </header>
 		<body>
