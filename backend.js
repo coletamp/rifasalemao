@@ -38,11 +38,11 @@ async function enviarEmailConfirmacao(pagamento) {
   };
 
   try {
-    console.log(`Enviando email de confirmação para: ${mailOptions.to}`);
+    console.log(`[LOG] Tentando enviar e-mail de confirmação para: ${mailOptions.to}`);
     await transporter.sendMail(mailOptions);
-    console.log("Email de confirmação enviado com sucesso.");
+    console.log("[LOG] E-mail de confirmação enviado com sucesso.");
   } catch (error) {
-    console.error("Erro ao enviar email de confirmação:", error);
+    console.error("[ERRO] Falha ao enviar e-mail de confirmação:", error);
   }
 }
 
@@ -83,11 +83,11 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
       status: "pendente",
     };
 
-    console.log(`Chave PIX gerada: ${JSON.stringify(qrcodeData)}`);
+    console.log(`[LOG] Chave PIX gerada: ${JSON.stringify(qrcodeData)}`);
 
     return qrcodeData;
   } catch (error) {
-    console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
+    console.error("[ERRO] Falha ao gerar chave PIX:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Erro ao gerar chave PIX");
   }
 }
@@ -107,11 +107,11 @@ app.post("/gerar-chave-pix", async (req, res) => {
     pagamentos.push(qrcodeData);
     fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 
-    console.log(`Chave PIX gerada com sucesso: txid=${qrcodeData.txid}, valor=${qrcodeData.valor}, email=${qrcodeData.payerEmail}`);
+    console.log(`[LOG] Chave PIX gerada com sucesso: txid=${qrcodeData.txid}, valor=${qrcodeData.valor}, email=${qrcodeData.payerEmail}`);
 
     res.json(qrcodeData);
   } catch (error) {
-    console.error("Erro ao gerar chave PIX:", error.message);
+    console.error("[ERRO] Falha ao gerar chave PIX:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -123,26 +123,26 @@ async function atualizarStatusPagamentos() {
 
     for (const pagamento of pagamentos) {
       if (pagamento.status !== "approved") {
-        console.log(`Verificando status do pagamento: txid=${pagamento.txid}`);
+        console.log(`[LOG] Verificando status do pagamento: txid=${pagamento.txid}`);
         const response = await axios.get(`https://api.mercadopago.com/v1/payments/${pagamento.txid}`, {
           headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
         });
 
-        pagamento.status = response.data.status; // Atualiza o status
+        pagamento.status = response.data.status;
 
-        console.log(`Status atualizado: txid=${pagamento.txid}, status=${pagamento.status}`);
+        console.log(`[LOG] Status atualizado: txid=${pagamento.txid}, status=${pagamento.status}`);
 
         if (pagamento.status === "approved") {
-          console.log(`Pagamento confirmado: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
-          await enviarEmailConfirmacao(pagamento); // Enviar email de confirmação
+          console.log(`[LOG] Pagamento confirmado: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
+          await enviarEmailConfirmacao(pagamento); // Enviar e-mail de confirmação
         }
       }
     }
 
     fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
-    console.log("Status dos pagamentos atualizado com sucesso.");
+    console.log("[LOG] Status dos pagamentos atualizado com sucesso.");
   } catch (error) {
-    console.error("Erro ao atualizar status dos pagamentos:", error);
+    console.error("[ERRO] Falha ao atualizar status dos pagamentos:", error);
   }
 }
 
@@ -165,7 +165,7 @@ app.post("/verificar-status", async (req, res) => {
   }
 
   try {
-    console.log(`Verificando status manualmente para txid=${txid}`);
+    console.log(`[LOG] Verificando status manualmente para txid=${txid}`);
     const response = await axios.get(`https://api.mercadopago.com/v1/payments/${txid}`, {
       headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
     });
@@ -179,17 +179,17 @@ app.post("/verificar-status", async (req, res) => {
       pagamento.status = status;
       fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 
-      console.log(`Status atualizado manualmente: txid=${pagamento.txid}, status=${pagamento.status}`);
+      console.log(`[LOG] Status atualizado manualmente: txid=${pagamento.txid}, status=${pagamento.status}`);
 
       if (status === "approved") {
-        console.log(`Pagamento confirmado manualmente: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
-        await enviarEmailConfirmacao(pagamento); // Enviar email de confirmação
+        console.log(`[LOG] Pagamento confirmado manualmente: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
+        await enviarEmailConfirmacao(pagamento);
       }
     }
 
     res.json({ status });
   } catch (error) {
-    console.error("Erro ao verificar status do pagamento:", error);
+    console.error("[ERRO] Falha ao verificar status do pagamento:", error);
     res.status(500).json({ error: "Erro ao verificar status do pagamento" });
   }
 });
@@ -198,4 +198,4 @@ app.post("/verificar-status", async (req, res) => {
 setInterval(atualizarStatusPagamentos, 60000);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => console.log(`[LOG] Servidor rodando na porta ${PORT}`));
