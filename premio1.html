@@ -1014,7 +1014,7 @@
   let totalValue = parseFloat(totalValueInput?.value) || 1;
 
   function updateButton() {
-    const pricePerNumber = 0.39;
+    const pricePerNumber = 0.01;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
     calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
   }
@@ -1068,7 +1068,7 @@
         return;
     }
 
-    const pricePerNumber = 0.39;
+    const pricePerNumber = 0.01;
     const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
     try {
