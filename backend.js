@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer");
 
 const app = express();
 app.use(bodyParser.json());
@@ -16,6 +17,32 @@ const PAGAMENTOS_FILE = "pagamentos.json";
 // Inicializar o arquivo de pagamentos se não existir
 if (!fs.existsSync(PAGAMENTOS_FILE)) {
   fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify([]));
+}
+
+// Configuração do transporte de e-mail
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "wesleyalemaoh@gmail.com",
+    pass: "M10019210a",
+  },
+});
+
+// Função para enviar e-mail de confirmação
+async function enviarEmailConfirmacao(pagamento) {
+  const mailOptions = {
+    from: "wesleyalemaoh@gmail.com",
+    to: "coleta.mp15@gmail.com",
+    subject: "Confirmação de Pagamento",
+    text: `Pagamento confirmado!\n\nDetalhes do pagamento:\n- Valor: R$ ${pagamento.valor}\n- Email do Pagador: ${pagamento.payerEmail}\n- CPF do Pagador: ${pagamento.payerCpf}\n- Status: ${pagamento.status}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Email de confirmação enviado com sucesso.");
+  } catch (error) {
+    console.error("Erro ao enviar email de confirmação:", error.message);
+  }
 }
 
 // Função para gerar uma chave PIX
@@ -55,7 +82,6 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
       status: "pendente",
     };
 
-    // Adicionando log
     console.log(`Chave PIX gerada: ${JSON.stringify(qrcodeData)}`);
 
     return qrcodeData;
@@ -80,7 +106,6 @@ app.post("/gerar-chave-pix", async (req, res) => {
     pagamentos.push(qrcodeData);
     fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 
-    // Adicionando log
     console.log(`Chave PIX gerada com sucesso: txid=${qrcodeData.txid}, valor=${qrcodeData.valor}, email=${qrcodeData.payerEmail}`);
 
     res.json(qrcodeData);
@@ -102,6 +127,10 @@ async function atualizarStatusPagamentos() {
         });
 
         pagamento.status = response.data.status; // Atualiza o status
+
+        if (pagamento.status === "approved") {
+          await enviarEmailConfirmacao(pagamento); // Enviar email de confirmação
+        }
       }
     }
 
@@ -143,6 +172,10 @@ app.post("/verificar-status", async (req, res) => {
     if (pagamento) {
       pagamento.status = status;
       fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
+
+      if (status === "approved") {
+        await enviarEmailConfirmacao(pagamento); // Enviar email de confirmação
+      }
     }
 
     res.json({ status });
