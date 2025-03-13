@@ -38,10 +38,11 @@ async function enviarEmailConfirmacao(pagamento) {
   };
 
   try {
+    console.log(`Enviando email de confirmação para: ${mailOptions.to}`);
     await transporter.sendMail(mailOptions);
     console.log("Email de confirmação enviado com sucesso.");
   } catch (error) {
-    console.error("Erro ao enviar email de confirmação:", error.message);
+    console.error("Erro ao enviar email de confirmação:", error);
   }
 }
 
@@ -122,11 +123,14 @@ async function atualizarStatusPagamentos() {
 
     for (const pagamento of pagamentos) {
       if (pagamento.status !== "approved") {
+        console.log(`Verificando status do pagamento: txid=${pagamento.txid}`);
         const response = await axios.get(`https://api.mercadopago.com/v1/payments/${pagamento.txid}`, {
           headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
         });
 
         pagamento.status = response.data.status; // Atualiza o status
+
+        console.log(`Status atualizado: txid=${pagamento.txid}, status=${pagamento.status}`);
 
         if (pagamento.status === "approved") {
           console.log(`Pagamento confirmado: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
@@ -138,7 +142,7 @@ async function atualizarStatusPagamentos() {
     fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
     console.log("Status dos pagamentos atualizado com sucesso.");
   } catch (error) {
-    console.error("Erro ao atualizar status dos pagamentos:", error.message);
+    console.error("Erro ao atualizar status dos pagamentos:", error);
   }
 }
 
@@ -161,6 +165,7 @@ app.post("/verificar-status", async (req, res) => {
   }
 
   try {
+    console.log(`Verificando status manualmente para txid=${txid}`);
     const response = await axios.get(`https://api.mercadopago.com/v1/payments/${txid}`, {
       headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
     });
@@ -174,6 +179,8 @@ app.post("/verificar-status", async (req, res) => {
       pagamento.status = status;
       fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 
+      console.log(`Status atualizado manualmente: txid=${pagamento.txid}, status=${pagamento.status}`);
+
       if (status === "approved") {
         console.log(`Pagamento confirmado manualmente: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
         await enviarEmailConfirmacao(pagamento); // Enviar email de confirmação
@@ -182,6 +189,7 @@ app.post("/verificar-status", async (req, res) => {
 
     res.json({ status });
   } catch (error) {
+    console.error("Erro ao verificar status do pagamento:", error);
     res.status(500).json({ error: "Erro ao verificar status do pagamento" });
   }
 });
