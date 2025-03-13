@@ -24,7 +24,7 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "wesleyalemaoh@gmail.com",
-    pass: "M10019210a",
+    pass: "<SENHA_DE_APP>", // Substitua pela senha de aplicativo do Gmail
   },
 });
 
@@ -129,6 +129,7 @@ async function atualizarStatusPagamentos() {
         pagamento.status = response.data.status; // Atualiza o status
 
         if (pagamento.status === "approved") {
+          console.log(`Pagamento confirmado: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
           await enviarEmailConfirmacao(pagamento); // Enviar email de confirmação
         }
       }
@@ -174,6 +175,7 @@ app.post("/verificar-status", async (req, res) => {
       fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 
       if (status === "approved") {
+        console.log(`Pagamento confirmado manualmente: txid=${pagamento.txid}, valor=${pagamento.valor}, email=${pagamento.payerEmail}`);
         await enviarEmailConfirmacao(pagamento); // Enviar email de confirmação
       }
     }
