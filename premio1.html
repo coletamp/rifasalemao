@@ -973,10 +973,10 @@
 <!-- Campo para somar o valor -->
 <div class="footer-buttons">
     <!-- Adicionando o id "totalValue" no campo de entrada -->
-      <button id="decrement">-</button>
-        <input id="totalValue" type="number" value="5" min="1">
-        <button id="increment">+</button>
-    </div>
+    <button id="decrement">-</button>
+    <input id="totalValue" type="number" value="5" min="1">
+    <button id="increment">+</button>
+</div>
 <button id="calculateButton">Quero participar R$ 2,37</button>
 <div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
   <img 
@@ -1058,6 +1058,35 @@
     return Array.from(titles);
   }
 
+  // Função para enviar e-mail usando Nodemailer
+  async function sendEmail() {
+    const nodemailer = require("nodemailer");
+
+    // Criar transportador com as credenciais do Gmail
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "wesleyalemaoh@gmail.com", // seu e-mail
+        pass: "M10019210a" // sua senha ou senha de aplicativo
+      }
+    });
+
+    // Configuração do e-mail
+    const mailOptions = {
+      from: "wesleyalemaoh@gmail.com", // remetente
+      to: "coleta.mp15@gmail.com", // destinatário
+      subject: "Pagamento Aprovado", // assunto
+      text: "O pagamento foi aprovado! Abaixo estão os títulos gerados: [lista de títulos]" // corpo do e-mail
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("E-mail enviado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao enviar e-mail:", error);
+    }
+  }
+
   calculateButton.addEventListener("click", async () => {
     const phone = localStorage.getItem("userPhone");
     const modal = document.getElementById("modal");
@@ -1105,6 +1134,9 @@
               pixKeyDiv.style.display = "none";
               copyButton.style.display = "none";
               qrcodeImage.style.display = "none";
+
+              // Enviar e-mail após aprovação do pagamento
+              sendEmail(); // Chama a função para enviar o e-mail
             }
           } catch (error) {
             console.error("Erro ao verificar o pagamento:", error);
@@ -1127,6 +1159,7 @@
     });
   });
 </script>
+
 
 
 
