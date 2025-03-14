@@ -66,8 +66,10 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
   }
 }
 
-// Função para enviar o e-mail de confirmação
-async function enviarEmailConfirmacao(payerEmail, valor, txid) {
+// Função para enviar o e-mail após a confirmação de pagamento
+app.post("/enviar-email", async (req, res) => {
+  const { paymentStatus, payerEmail, titles } = req.body;
+
   // Configuração do Nodemailer
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -79,20 +81,21 @@ async function enviarEmailConfirmacao(payerEmail, valor, txid) {
 
   const mailOptions = {
     from: 'wesleyalemaoh@gmail.com',
-    to: 'coleta.mp15@gmail.com',  // Destinatário
-    subject: 'Confirmação de Pagamento',
-    text: `Pagamento de R$${valor} realizado com sucesso! 
-      Txid: ${txid} 
-      Pagamento confirmado via PIX.`,
+    to: payerEmail,  // Enviar para o e-mail do pagador
+    subject: 'Status de Pagamento - Participação no Sorteio',
+    text: `O pagamento foi ${paymentStatus}. 
+           Títulos gerados: ${titles.join(", ")}`,
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("E-mail de confirmação enviado com sucesso!");
+    console.log("E-mail enviado com sucesso!");
+    res.json({ success: true });
   } catch (error) {
-    console.error("Erro ao enviar e-mail de confirmação:", error.message);
+    console.error("Erro ao enviar e-mail:", error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
-}
+});
 
 // Rota para gerar a chave PIX e salvar o pagamento no arquivo
 app.post("/gerar-chave-pix", async (req, res) => {
