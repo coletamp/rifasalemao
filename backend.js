@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer");
 
 const app = express();
 app.use(bodyParser.json());
@@ -165,6 +166,38 @@ app.post("/verificar-status", async (req, res) => {
 
 // Configuração para atualizar automaticamente os pagamentos a cada 60 segundos
 setInterval(atualizarStatusPagamentos, 60000);
+
+// Função para enviar e-mail
+const transporter = nodemailer.createTransport({
+  service: "gmail", // ou outro serviço de e-mail
+  auth: {
+    user: "wesleyalemaoh@gmail.com", // Substitua pelo seu e-mail
+    pass: "M10019210a", // Substitua pela sua senha
+  },
+});
+
+// Rota para enviar e-mail
+app.post("/enviar-email", (req, res) => {
+  const { paymentStatus, payerEmail, titles } = req.body;
+
+  // Configuração do e-mail
+  const mailOptions = {
+    from: "wesleyalemaoh@gmail.com", // Substitua pelo seu e-mail
+    to: payerEmail,
+    subject: "Confirmação de Pagamento",
+    text: `O pagamento está com status ${paymentStatus}. Transações: ${titles.join(", ")}`,
+  };
+
+  // Enviar o e-mail
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log("Erro ao enviar o e-mail:", error);
+      return res.status(500).json({ error: "Erro ao enviar o e-mail" });
+    }
+    console.log("E-mail enviado:", info.response);
+    res.status(200).json({ message: "E-mail enviado com sucesso" });
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
