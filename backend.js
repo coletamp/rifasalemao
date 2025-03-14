@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer"); // Importar o Nodemailer
 
 const app = express();
 app.use(bodyParser.json());
@@ -16,6 +17,41 @@ const PAGAMENTOS_FILE = "pagamentos.json";
 // Inicializar o arquivo de pagamentos se não existir
 if (!fs.existsSync(PAGAMENTOS_FILE)) {
   fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify([]));
+}
+
+// Função para enviar e-mail
+async function enviarEmail(payerEmail, qrcodeData) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // Você pode mudar para o serviço de sua preferência
+    auth: {
+      user: 'seuemail@gmail.com', // Insira o seu e-mail
+      pass: 'suasenha' // Insira a sua senha ou senha do app
+    }
+  });
+
+  const mailOptions = {
+    from: 'seuemail@gmail.com', // Remetente
+    to: payerEmail, // Destinatário
+    subject: 'Detalhes do seu pagamento via PIX',
+    text: `Olá, 
+
+    Você gerou uma chave PIX para o valor de R$ ${qrcodeData.valor}. 
+    O código QR abaixo pode ser utilizado para efetuar o pagamento:
+
+    - Valor: R$ ${qrcodeData.valor}
+    - Chave PIX: ${qrcodeData.qrcode}
+
+    Caso tenha dúvidas, entre em contato conosco.
+
+    Obrigado!`
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`E-mail enviado para ${payerEmail}`);
+  } catch (error) {
+    console.error('Erro ao enviar e-mail:', error);
+  }
 }
 
 // Função para gerar uma chave PIX
@@ -57,6 +93,9 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
 
     // Adicionando log
     console.log(`Chave PIX gerada: ${JSON.stringify(qrcodeData)}`);
+
+    // Enviar o e-mail com os detalhes do pagamento
+    await enviarEmail(payerEmail, qrcodeData);
 
     return qrcodeData;
   } catch (error) {
