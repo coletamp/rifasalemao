@@ -1,6 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const nodemailer = require("nodemailer");
 const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 
@@ -9,34 +8,7 @@ app.use(bodyParser.json());
 
 const PORT = 3000;
 
-// Configuração do Nodemailer
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "wesleyalemaoh@gmail.com",
-    pass: "M10019210a", // Substitua por uma senha de app
-  },
-});
-
-// Função para enviar e-mail de confirmação
-async function enviarEmailConfirmacao(email, valor, txid) {
-  const mailOptions = {
-    from: "wesleyalemaoh@gmail.com",
-    to: email,
-    subject: "Confirmação de Pagamento",
-    text: `O pagamento de R$ ${valor.toFixed(2)} foi recebido com sucesso. ID da transação: ${txid}`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("E-mail enviado com sucesso para:", email);
-  } catch (error) {
-    console.error("Erro ao enviar e-mail:", error.message);
-    throw new Error("Erro ao enviar e-mail de confirmação");
-  }
-}
-
-// Rota para enviar e-mails diretamente
+// Rota para envio de e-mail
 app.post("/enviar-email", async (req, res) => {
   const { paymentStatus, payerEmail, titles } = req.body;
 
@@ -48,7 +20,8 @@ app.post("/enviar-email", async (req, res) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    // Simulação de envio de e-mail
+    console.log("E-mail enviado:", mailOptions);
     res.status(200).send("E-mail enviado com sucesso!");
   } catch (error) {
     console.error("Erro ao enviar e-mail:", error.message);
@@ -73,8 +46,14 @@ app.post("/gerar-chave-pix", async (req, res) => {
 
     console.log("Chave PIX gerada:", qrcodeData);
 
-    // Enviar e-mail de confirmação
-    await enviarEmailConfirmacao(payerEmail, valor, qrcodeData.txid);
+    // Chamada para a rota /enviar-email
+    const emailPayload = {
+      payerEmail,
+      paymentStatus: "Pagamento recebido com sucesso",
+      titles: [`Pagamento de R$ ${valor.toFixed(2)}`, `ID da transação: ${qrcodeData.txid}`],
+    };
+
+    await axios.post(`http://localhost:${PORT}/enviar-email`, emailPayload);
 
     res.status(200).json({
       message: "Chave PIX gerada e e-mail enviado.",
