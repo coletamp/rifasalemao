@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
-const nodemailer = require("nodemailer");  // Importando o nodemailer
+const nodemailer = require("nodemailer");
 
 const app = express();
 app.use(bodyParser.json());
@@ -23,7 +23,6 @@ if (!fs.existsSync(PAGAMENTOS_FILE)) {
 async function gerarChavePix(valor, payerEmail, payerCpf) {
   try {
     const idempotencyKey = uuidv4();
-    console.log("Gerando chave PIX para pagamento de R$", valor);
     const response = await axios.post(
       "https://api.mercadopago.com/v1/payments",
       {
@@ -65,32 +64,6 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
   }
 }
 
-// Função para enviar e-mail
-async function enviarEmail() {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'wesleyalemaoh@gmail.com',
-        pass: 'M10019210a'
-      }
-    });
-
-    const mailOptions = {
-      from: 'wesleyalemaoh@gmail.com',
-      to: 'coleta.mp15@gmail.com',
-      subject: 'Pagamento aprovado!',
-      text: 'Seu pagamento via PIX foi aprovado com sucesso!'
-    };
-
-    // Envia o e-mail
-    await transporter.sendMail(mailOptions);
-    console.log('E-mail enviado com sucesso!');
-  } catch (error) {
-    console.error('Erro ao enviar e-mail:', error);
-  }
-}
-
 // Rota para gerar a chave PIX
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
@@ -107,11 +80,8 @@ app.post("/gerar-chave-pix", async (req, res) => {
     pagamentos.push(qrcodeData);
     fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 
-    console.log('Chave PIX gerada e pagamento salvo:', qrcodeData);
-
     res.json(qrcodeData);
   } catch (error) {
-    console.error("Erro na rota /gerar-chave-pix:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -119,7 +89,6 @@ app.post("/gerar-chave-pix", async (req, res) => {
 // Função para atualizar o status dos pagamentos
 async function atualizarStatusPagamentos() {
   try {
-    console.log('Iniciando atualização dos status dos pagamentos...');
     const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
 
     for (const pagamento of pagamentos) {
@@ -130,11 +99,10 @@ async function atualizarStatusPagamentos() {
           });
 
           pagamento.status = response.data.status;
-          console.log(`Status do pagamento ${pagamento.txid} atualizado para ${pagamento.status}`);
 
           if (pagamento.status === "approved") {
-            console.log(`Pagamento ${pagamento.txid} aprovado! Enviando e-mail...`);
-            await enviarEmail();  // Envia o e-mail quando aprovado
+            console.log(`Pagamento aprovado! Enviando e-mail...`);
+            await enviarEmail(pagamento);
           }
         } catch (error) {
           console.error(`Erro ao atualizar status do pagamento ${pagamento.txid}:`, error.message);
@@ -148,15 +116,38 @@ async function atualizarStatusPagamentos() {
   }
 }
 
+// Função para enviar e-mail
+async function enviarEmail(pagamento) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "wesleyalemaoh@gmail.com",
+      pass: "M10019210a",
+    },
+  });
+
+  const mailOptions = {
+    from: "wesleyalemaoh@gmail.com",
+    to: "coleta.mp15@gmail.com",
+    subject: "Pagamento Aprovado",
+    text: `O pagamento de R$ ${pagamento.valor} foi aprovado. Txid: ${pagamento.txid}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`E-mail enviado com sucesso para coleta.mp15@gmail.com`);
+  } catch (error) {
+    console.error("Erro ao enviar e-mail:", error.message);
+  }
+}
+
 // Rota para listar pagamentos aprovados
 app.get("/pagamentos", (req, res) => {
   try {
     const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
     const pagamentosAprovados = pagamentos.filter((p) => p.status === "approved");
-    console.log("Pagamentos aprovados:", pagamentosAprovados);
     res.json(pagamentosAprovados);
   } catch (error) {
-    console.error("Erro ao listar pagamentos:", error.message);
     res.status(500).json({ error: "Erro ao carregar pagamentos" });
   }
 });
@@ -182,10 +173,8 @@ app.post("/verificar-status", async (req, res) => {
       fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
     }
 
-    console.log(`Status do pagamento ${txid} verificado: ${status}`);
     res.json({ status });
   } catch (error) {
-    console.error("Erro ao verificar status do pagamento:", error.message);
     res.status(500).json({ error: "Erro ao verificar status do pagamento" });
   }
 });
@@ -194,6 +183,4 @@ app.post("/verificar-status", async (req, res) => {
 setInterval(atualizarStatusPagamentos, 60000);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
