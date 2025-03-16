@@ -99,11 +99,6 @@ async function atualizarStatusPagamentos() {
           });
 
           pagamento.status = response.data.status;
-
-          if (pagamento.status === "approved") {
-            console.log(`Pagamento aprovado! Enviando e-mail...`);
-            await enviarEmail(pagamento);
-          }
         } catch (error) {
           console.error(`Erro ao atualizar status do pagamento ${pagamento.txid}:`, error.message);
         }
@@ -113,31 +108,6 @@ async function atualizarStatusPagamentos() {
     fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
   } catch (error) {
     console.error("Erro ao atualizar status dos pagamentos:", error.message);
-  }
-}
-
-// Função para enviar e-mail
-async function enviarEmail(pagamento) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "wesleyalemaoh@gmail.com",
-      pass: "M10019210a",
-    },
-  });
-
-  const mailOptions = {
-    from: "wesleyalemaoh@gmail.com",
-    to: "coleta.mp15@gmail.com",
-    subject: "Pagamento Aprovado",
-    text: `O pagamento de R$ ${pagamento.valor} foi aprovado. Txid: ${pagamento.txid}`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`E-mail enviado com sucesso para coleta.mp15@gmail.com`);
-  } catch (error) {
-    console.error("Erro ao enviar e-mail:", error.message);
   }
 }
 
@@ -176,6 +146,43 @@ app.post("/verificar-status", async (req, res) => {
     res.json({ status });
   } catch (error) {
     res.status(500).json({ error: "Erro ao verificar status do pagamento" });
+  }
+});
+
+// Rota para enviar email
+app.post("/enviar-email", async (req, res) => {
+  const { status, valor, payerEmail } = req.body;
+  
+  // Verificar se a resposta foi "approved"
+  if (status === "approved") {
+    console.log("Pagamento aprovado, enviando email...");
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "wesleyalemaoh@gmail.com",
+        pass: "M10019210a",
+      },
+    });
+
+    const mailOptions = {
+      from: "wesleyalemaoh@gmail.com",
+      to: "coleta.mp15@gmail.com",
+      subject: "Pagamento Aprovado",
+      text: `Pagamento de R$${valor} aprovado. Payer: ${payerEmail}`,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("Email enviado com sucesso.");
+      res.status(200).json({ message: "Email enviado com sucesso." });
+    } catch (error) {
+      console.error("Erro ao enviar email:", error);
+      res.status(500).json({ error: "Erro ao enviar email" });
+    }
+  } else {
+    console.log("Pagamento não aprovado. Não enviando email.");
+    res.status(400).json({ error: "Pagamento não aprovado." });
   }
 });
 
