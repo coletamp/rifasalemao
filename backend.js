@@ -88,7 +88,7 @@ app.post("/gerar-chave-pix", async (req, res) => {
     console.error("Erro ao gerar chave PIX:", error.message);
     res.status(500).json({ error: error.message });
   }
-}
+});
 
 // Função para enviar o e-mail
 async function enviarEmail(destinatario, assunto, conteudo) {
@@ -179,6 +179,22 @@ app.post("/verificar-status", async (req, res) => {
     res.json({ status });
   } catch (error) {
     res.status(500).json({ error: "Erro ao verificar status do pagamento" });
+  }
+});
+
+// Rota para enviar o e-mail
+app.post("/enviar-email", async (req, res) => {
+  const { to, subject, text } = req.body;
+  if (!to || !subject || !text) {
+    return res.status(400).json({ error: "Informações de e-mail incompletas" });
+  }
+
+  try {
+    // Lógica para enviar o e-mail via API de e-mail, pode ser integrado com um serviço de envio como o SendGrid, Mailgun, etc.
+    console.log(`Enviando e-mail para ${to} com o assunto: ${subject}`);
+    res.status(200).json({ message: "E-mail enviado com sucesso" });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao enviar e-mail" });
   }
 });
 
