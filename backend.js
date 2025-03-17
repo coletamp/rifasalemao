@@ -110,36 +110,35 @@ async function enviarEmail(destinatario, assunto, conteudo) {
 }
 
 // Função para atualizar o status dos pagamentos e verificar se deve enviar e-mail
-async function atualizarStatusPagamentos() {
+async function atualizarStatusPagamento(txid) {
   try {
     const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
-    console.log("Iniciando a atualização do status dos pagamentos...");
+    const pagamento = pagamentos.find(p => p.txid === txid);
 
-    for (const pagamento of pagamentos) {
-      if (pagamento.status !== "approved") {
-        console.log(`Verificando pagamento com txid ${pagamento.txid}...`);
-        const response = await axios.get(`https://api.mercadopago.com/v1/payments/${pagamento.txid}`, {
-          headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-        });
-
-        const novoStatus = response.data.status;
-        if (novoStatus !== pagamento.status) {
-          pagamento.status = novoStatus; // Atualiza o status
-
-          // Se o status mudar para "approved", envia o e-mail
-          if (novoStatus === "approved") {
-            console.log(`Pagamento aprovado com txid ${pagamento.txid}. Enviando e-mail...`);
-            await enviarEmail(pagamento.payerEmail, "Pagamento Aprovado", `Seu pagamento de R$ ${pagamento.valor} foi aprovado com sucesso.`);
-          }
-        }
-      }
+    if (!pagamento || pagamento.status === "approved") {
+      return; // Se o pagamento não for encontrado ou já estiver aprovado, não faz nada
     }
 
-    // Salvar o status atualizado
-    fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
-    console.log("Status dos pagamentos atualizado com sucesso.");
+    console.log(`Verificando pagamento com txid ${pagamento.txid}...`);
+    const response = await axios.get(`https://api.mercadopago.com/v1/payments/${pagamento.txid}`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+    });
+
+    const novoStatus = response.data.status;
+    if (novoStatus !== pagamento.status) {
+      pagamento.status = novoStatus; // Atualiza o status
+
+      // Se o status mudar para "approved", envia o e-mail
+      if (novoStatus === "approved") {
+        console.log(`Pagamento aprovado com txid ${pagamento.txid}. Enviando e-mail...`);
+        await enviarEmail(pagamento.payerEmail, "Pagamento Aprovado", `Seu pagamento de R$ ${pagamento.valor} foi aprovado com sucesso.`);
+      }
+
+      // Salvar o status atualizado
+      fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
+    }
   } catch (error) {
-    console.error("Erro ao atualizar status dos pagamentos:", error.message);
+    console.error("Erro ao atualizar status do pagamento:", error.message);
   }
 }
 
@@ -198,8 +197,15 @@ app.post("/enviar-email", async (req, res) => {
   }
 });
 
-// Configuração para atualizar automaticamente os pagamentos a cada 5 segundos
-setInterval(atualizarStatusPagamentos, 5000);
+// Função para atualizar automaticamente os pagamentos a cada 5 segundos, agora só atualizando pagamentos não aprovados
+setInterval(() => {
+  const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
+  pagamentos.forEach(pagamento => {
+    if (pagamento.status !== "approved") {
+      atualizarStatusPagamento(pagamento.txid);
+    }
+  });
+}, 5000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
