@@ -998,14 +998,16 @@
 </div>
 
 <!-- Adicionando a imagem do QR Code abaixo do campo da chave Pix -->
-<img 
-    width="250" 
-    height="250" 
-    src="" 
-    style="display: none; margin-top: 20px;" 
-    id="qrcodeImage"
-/>
-
+<div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
+    <div class="countdown" id="countdown" style="display: none;"></div>
+    <img 
+        width="250" 
+        height="250" 
+        src="" 
+        style="display: none; margin-top: 20px;" 
+        id="qrcodeImage"
+    />
+</div>
 <div id="titulo-container" style="display:none;">
     <h3>Títulos Disponíveis:</h3>
     <ul id="titulo-list"></ul>
