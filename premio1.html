@@ -973,184 +973,170 @@
 <!-- Campo para somar o valor -->
 <div class="footer-buttons">
     <!-- Adicionando o id "totalValue" no campo de entrada -->
-      <button id="decrement">-</button>
-        <input id="totalValue" type="number" value="5" min="1">
-        <button id="increment">+</button>
-    </div>
+    <button id="decrement">-</button>
+    <input id="totalValue" type="number" value="5" min="1">
+    <button id="increment">+</button>
+</div>
 <button id="calculateButton">Quero participar R$ 1,95</button>
 <div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
-	<div class="countdown" id="countdown"></div>
+    <div class="countdown" id="countdown"></div>
 
-<script>
-    var timeLeft = 600; // 10 minutos em segundos
-    var countdownElement = document.getElementById('countdown');
+    <script>
+        var timeLeft = 600; // 10 minutos em segundos
+        var countdownElement = document.getElementById('countdown');
 
-    function updateCountdown() {
-        var minutes = Math.floor(timeLeft / 60);
-        var seconds = timeLeft % 60;
-        countdownElement.textContent = "Você tem " + minutes + ":" + (seconds < 10 ? '0' : '') + seconds + " para pagar.";
+        function updateCountdown() {
+            var minutes = Math.floor(timeLeft / 60);
+            var seconds = timeLeft % 60;
+            countdownElement.textContent = "Você tem " + minutes + ":" + (seconds < 10 ? '0' : '') + seconds + " para pagar.";
 
-        if (timeLeft <= 0) {
-            countdownElement.textContent = "O tempo para o pagamento expirou.";
-        } else {
-            timeLeft--;
-            setTimeout(updateCountdown, 1000);
+            if (timeLeft <= 0) {
+                countdownElement.textContent = "O tempo para o pagamento expirou.";
+            } else {
+                timeLeft--;
+                setTimeout(updateCountdown, 1000);
+            }
         }
-    }
 
-    // Inicia a contagem regressiva
-    updateCountdown();
-</script>
-  <img 
-    width="250" 
-    height="250" 
-    src="" 
-    style="display: none;" 
-    id="qrcodeImage"
-  />
+        // Inicia a contagem regressiva
+        updateCountdown();
+    </script>
+    <img 
+        width="250" 
+        height="250" 
+        src="" 
+        style="display: none;" 
+        id="qrcodeImage"
+    />
 </div>
 <div id="selectedTitles"></div>
 
 <div id="pix-container">
-  <div id="pix-box">
-    <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
-  </div><br>
-  <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
+    <div id="pix-box">
+        <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
+    </div><br>
+    <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
 </div>
 
 <div id="titulo-container" style="display:none;">
-  <h3>Títulos Disponíveis:</h3>
-  <ul id="titulo-list"></ul>
+    <h3>Títulos Disponíveis:</h3>
+    <ul id="titulo-list"></ul>
 </div>
 
 <script>
-  const decrementButton = document.getElementById("decrement");
-  const incrementButton = document.getElementById("increment");
-  const totalValueInput = document.getElementById("totalValue");
-  const calculateButton = document.getElementById("calculateButton");
-  const pixKeyDiv = document.getElementById("pixKey");
-  const selectedTitlesDiv = document.getElementById("selectedTitles");
-  const copyButton = document.getElementById("copy-pix-key-button");
-  const qrcodeImage = document.getElementById("qrcodeImage");
+    const decrementButton = document.getElementById("decrement");
+    const incrementButton = document.getElementById("increment");
+    const totalValueInput = document.getElementById("totalValue");
+    const calculateButton = document.getElementById("calculateButton");
+    const pixKeyDiv = document.getElementById("pixKey");
+    const selectedTitlesDiv = document.getElementById("selectedTitles");
+    const copyButton = document.getElementById("copy-pix-key-button");
+    const qrcodeImage = document.getElementById("qrcodeImage");
 
-  let totalValue = parseFloat(totalValueInput?.value) || 1;
+    let totalValue = parseFloat(totalValueInput?.value) || 1;
 
-  function updateButton() {
-    const pricePerNumber = 0.39;
-    const totalAmount = (totalValue * pricePerNumber).toFixed(2);
-    calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
-  }
-
-  decrementButton?.addEventListener("click", () => {
-    if (totalValue > 1) {
-      totalValue--;
-      totalValueInput.value = totalValue;
-      updateButton();
+    function updateButton() {
+        const pricePerNumber = 0.39;
+        const totalAmount = (totalValue * pricePerNumber).toFixed(2);
+        calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
     }
-  });
 
-  incrementButton?.addEventListener("click", () => {
-    totalValue++;
-    totalValueInput.value = totalValue;
-    updateButton();
-  });
-
-  totalValueInput?.addEventListener("input", () => {
-    totalValue = parseFloat(totalValueInput.value) || 1;
-    updateButton();
-  });
-
-  // Adicionando funcionalidade aos cards
-  const cards = document.querySelectorAll(".card");
-  cards.forEach(card => {
-    card.addEventListener("click", () => {
-      const cardValue = parseInt(card.getAttribute("data-value"), 10);
-      totalValue += cardValue;
-      totalValueInput.value = totalValue;
-      updateButton();
+    decrementButton?.addEventListener("click", () => {
+        if (totalValue > 1) {
+            totalValue--;
+            totalValueInput.value = totalValue;
+            updateButton();
+        }
     });
-  });
 
-  function generateRandomTitles(quantity) {
-    const titles = new Set();
-    while (titles.size < quantity) {
-      const randomNumber = Math.floor(Math.random() * 9999999) + 1;
-      titles.add(randomNumber.toString().padStart(7, "0"));
+    incrementButton?.addEventListener("click", () => {
+        totalValue++;
+        totalValueInput.value = totalValue;
+        updateButton();
+    });
+
+    totalValueInput?.addEventListener("input", () => {
+        totalValue = parseFloat(totalValueInput.value) || 1;
+        updateButton();
+    });
+
+    function generateRandomTitles(quantity) {
+        const titles = new Set();
+        while (titles.size < quantity) {
+            const randomNumber = Math.floor(Math.random() * 9999999) + 1;
+            titles.add(randomNumber.toString().padStart(7, "0"));
+        }
+        return Array.from(titles);
     }
-    return Array.from(titles);
-  }
 
-  calculateButton.addEventListener("click", async () => {
-    const phone = localStorage.getItem("userPhone");
-    const modal = document.getElementById("modal");
+    calculateButton.addEventListener("click", async () => {
+        const phone = localStorage.getItem("userPhone");
+        const modal = document.getElementById("modal");
 
-    if (!phone) {
-        // Abre o modal de login caso o telefone não esteja salvo
-        modal.style.display = "flex";
-        return;
-    }
+        if (!phone) {
+            modal.style.display = "flex";
+            return;
+        }
 
-    const pricePerNumber = 0.39;
-    const totalAmount = (totalValue * pricePerNumber).toFixed(2);
+        const pricePerNumber = 0.39;
+        const totalAmount = (totalValue * pricePerNumber).toFixed(2);
 
-    try {
-      const response = await fetch("https://rifas-3c8k.onrender.com/gerar-chave-pix", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          valor: parseFloat(totalAmount),
-          payerEmail: "usuario@exemplo.com",
-          payerCpf: "12345678909",
-        }),
-      });
-
-      const data = await response.json();
-      if (data.txid && data.qrcode && data.copiaECola) {
-        pixKeyDiv.textContent = data.qrcode;
-        qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
-        qrcodeImage.style.display = "block";
-        copyButton.style.display = "inline-block";
-
-        const paymentChecker = setInterval(async () => {
-          try {
-            const statusResponse = await fetch("https://rifas-3c8k.onrender.com/verificar-status", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ txid: data.txid }),
+        try {
+            const response = await fetch("https://rifas-3c8k.onrender.com/gerar-chave-pix", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    valor: parseFloat(totalAmount),
+                    payerEmail: "usuario@exemplo.com",
+                    payerCpf: "12345678909",
+                }),
             });
 
-            const statusData = await statusResponse.json();
-            if (statusData.status === "approved") {
-              clearInterval(paymentChecker);
-              const titles = generateRandomTitles(totalValue);
-              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.filter(title => title !== "0000001" && title !== "0000002").map(title => `<li>${title}</li>`).join("")}</ul>`;
-              pixKeyDiv.style.display = "none";
-              copyButton.style.display = "none";
-              qrcodeImage.style.display = "none";
+            const data = await response.json();
+            if (data.txid && data.qrcode && data.copiaECola) {
+                pixKeyDiv.textContent = data.qrcode;
+                qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
+                qrcodeImage.style.display = "block";
+                copyButton.style.display = "inline-block";
+
+                const paymentChecker = setInterval(async () => {
+                    try {
+                        const statusResponse = await fetch("https://rifas-3c8k.onrender.com/verificar-status", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ txid: data.txid }),
+                        });
+
+                        const statusData = await statusResponse.json();
+                        if (statusData.status === "approved") {
+                            clearInterval(paymentChecker);
+                            const titles = generateRandomTitles(totalValue);
+                            selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.filter(title => title !== "0000001" && title !== "0000002").map(title => `<li>${title}</li>`).join("")}</ul>`;
+                            pixKeyDiv.style.display = "none";
+                            copyButton.style.display = "none";
+                            qrcodeImage.style.display = "none";
+                        }
+                    } catch (error) {
+                        console.error("Erro ao verificar o pagamento:", error);
+                    }
+                }, 5000);
+            } else {
+                pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
             }
-          } catch (error) {
-            console.error("Erro ao verificar o pagamento:", error);
-          }
-        }, 5000);
-      } else {
-        pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
-      }
-    } catch (error) {
-      console.error("Erro ao conectar com o servidor:", error);
-      pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
-    }
-  });
-
-  copyButton?.addEventListener("click", () => {
-    navigator.clipboard.writeText(pixKeyDiv.textContent).then(() => {
-      alert("Chave Pix copiada com sucesso!");
-    }).catch(err => {
-      console.error("Erro ao copiar a chave Pix:", err);
+        } catch (error) {
+            console.error("Erro ao conectar com o servidor:", error);
+            pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
+        }
     });
-  });
+
+    copyButton?.addEventListener("click", () => {
+        navigator.clipboard.writeText(pixKeyDiv.textContent).then(() => {
+            alert("Chave Pix copiada com sucesso!");
+        }).catch(err => {
+            console.error("Erro ao copiar a chave Pix:", err);
+        });
+    });
 </script>
-
-
 
 
 
