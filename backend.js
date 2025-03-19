@@ -52,7 +52,7 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
       valor,
       payerEmail,
       payerCpf,
-      status: "pendente",
+      status: "pendente", // Inicialmente, o status é "pendente"
     };
 
     console.log(`Chave PIX gerada: ${JSON.stringify(qrcodeData)}`);
@@ -60,6 +60,51 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Erro ao gerar chave PIX");
+  }
+}
+
+// Função para salvar pagamento no arquivo
+function salvarPagamento(pagamento) {
+  const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
+  pagamentos.push(pagamento);
+  fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
+}
+
+// Função para verificar o status de um pagamento
+async function verificarStatusPagamento(txid) {
+  try {
+    const response = await axios.get(`https://api.mercadopago.com/v1/payments/${txid}`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+    });
+
+    return response.data.status;
+  } catch (error) {
+    console.error("Erro ao verificar status do pagamento:", error.message);
+    throw new Error("Erro ao verificar status do pagamento");
+  }
+}
+
+// Função para consultar o status do pagamento até que ele seja aprovado
+async function monitorarPagamento(txid, qrcodeData) {
+  let status = "pendente";
+  try {
+    while (status !== "approved") {
+      status = await verificarStatusPagamento(txid);
+
+      if (status === "approved") {
+        // Atualiza o status para 'approved' no pagamento
+        qrcodeData.status = status;
+        salvarPagamento(qrcodeData);
+        console.log(`Pagamento confirmado: txid=${txid}, status=approved`);
+        break;
+      }
+
+      // Espera 1 minuto antes de consultar novamente
+      console.log(`Status do pagamento ${txid} ainda não aprovado. Verificando novamente em 1 minuto...`);
+      await new Promise(resolve => setTimeout(resolve, 60000)); // Aguardar 1 minuto
+    }
+  } catch (error) {
+    console.error("Erro ao monitorar pagamento:", error.message);
   }
 }
 
@@ -73,9 +118,11 @@ app.post("/gerar-chave-pix", async (req, res) => {
 
     const qrcodeData = await gerarChavePix(parseFloat(valor), payerEmail, payerCpf);
 
-    const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
-    pagamentos.push(qrcodeData);
-    fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
+    // Salvar a transação no arquivo com status 'pendente'
+    salvarPagamento(qrcodeData);
+
+    // Monitorar o status do pagamento
+    monitorarPagamento(qrcodeData.txid, qrcodeData);
 
     console.log(`Chave PIX gerada com sucesso: txid=${qrcodeData.txid}, valor=${qrcodeData.valor}, email=${qrcodeData.payerEmail}`);
     res.json(qrcodeData);
@@ -84,28 +131,6 @@ app.post("/gerar-chave-pix", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// Função para atualizar o status dos pagamentos
-async function atualizarStatusPagamentos() {
-  try {
-    const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
-
-    for (const pagamento of pagamentos) {
-      if (pagamento.status !== "approved") {
-        const response = await axios.get(`https://api.mercadopago.com/v1/payments/${pagamento.txid}`, {
-          headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-        });
-
-        pagamento.status = response.data.status;
-      }
-    }
-
-    fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
-    console.log("Status dos pagamentos atualizado com sucesso.");
-  } catch (error) {
-    console.error("Erro ao atualizar status dos pagamentos:", error.message);
-  }
-}
 
 // Rota para listar apenas os pagamentos aprovados
 app.get("/pagamentos", (req, res) => {
@@ -117,49 +142,6 @@ app.get("/pagamentos", (req, res) => {
     res.status(500).json({ error: "Erro ao carregar pagamentos" });
   }
 });
-
-// Rota para verificar o status de um pagamento manualmente
-app.post("/verificar-status", async (req, res) => {
-  const { txid } = req.body;
-  if (!txid) {
-    return res.status(400).json({ error: "txid não fornecido" });
-  }
-
-  try {
-    const response = await axios.get(`https://api.mercadopago.com/v1/payments/${txid}`, {
-      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-    });
-
-    const status = response.data.status;
-
-    const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
-    const pagamento = pagamentos.find((p) => p.txid === txid);
-    if (pagamento) {
-      pagamento.status = status;
-      fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
-    }
-
-    res.json({ status });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao verificar status do pagamento" });
-  }
-});
-
-// Função para enviar um ping ao servidor
-async function enviarPing() {
-  try {
-    const response = await axios.get(`http://localhost:${PORT}/pagamentos`);
-    console.log("Ping bem-sucedido:", response.data);
-  } catch (error) {
-    console.error("Erro ao enviar ping:", error.message);
-  }
-}
-
-// Configuração para atualizar automaticamente os pagamentos a cada 60 segundos
-setInterval(atualizarStatusPagamentos, 60000);
-
-// Configuração para enviar ping ao servidor a cada 60 segundos
-setInterval(enviarPing, 60000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
