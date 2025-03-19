@@ -1159,7 +1159,7 @@
 
                 // Simulate the confirmation of the payment after a delay
                 setTimeout(async () => {
-                    const paymentResponse = await fetch(`https://api-de-pagamento.com/status/${data.txid}`);
+                    const paymentResponse = await fetch(`https://wesleyalemaopremios-com-br.onrender.com/status/${data.txid}`);
                     const paymentData = await paymentResponse.json();
 
                     if (paymentData.status === "approved") {
