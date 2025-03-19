@@ -1042,7 +1042,7 @@
 <script>
 function handleCardClick(card) {
     console.log('Card clicked:', card.dataset.value);
-    // Adicione lógica adicional para clicar no card
+    // Additional logic for card click here
 }
 
 function decrementValue() {
@@ -1050,24 +1050,24 @@ function decrementValue() {
     const currentValue = parseInt(totalValue.value, 10);
     if (currentValue > parseInt(totalValue.min, 10)) {
         totalValue.value = currentValue - 1;
-        console.log('Decrementado o valor:', totalValue.value);
+        console.log('Decremented value:', totalValue.value);
     } else {
-        console.log('Valor mínimo alcançado:', totalValue.min);
+        console.log('Minimum value reached:', totalValue.min);
     }
 }
 
 function incrementValue() {
     const totalValue = document.getElementById('totalValue');
     totalValue.value = parseInt(totalValue.value, 10) + 1;
-    console.log('Incrementado o valor:', totalValue.value);
+    console.log('Incremented value:', totalValue.value);
 }
 
 function logInputChange(input) {
-    console.log('Valor de entrada alterado:', input.value);
+    console.log('Input value changed:', input.value);
 }
 
 function calculate() {
-    console.log('Botão calcular clicado. Valor atual:', document.getElementById('totalValue').value);
+    console.log('Calculate button clicked. Current value:', document.getElementById('totalValue').value);
     document.getElementById('loading').style.display = 'block';
 }
 
@@ -1075,7 +1075,7 @@ function copyPixKey() {
     const pixKeyInput = document.getElementById('pixKey');
     pixKeyInput.select();
     document.execCommand('copy');
-    console.log('Chave Pix copiada para a área de transferência:', pixKeyInput.value);
+    console.log('Pix key copied to clipboard:', pixKeyInput.value);
 }
 </script>
 
@@ -1091,39 +1091,39 @@ function copyPixKey() {
     const countdownElement = document.getElementById('countdown');
     const loadingElement = document.getElementById("loading");
 
-    console.log("Elementos do DOM inicializados.");
+    console.log("DOM elements initialized.");
 
     let totalValue = parseFloat(totalValueInput?.value) || 1;
-    console.log(`Valor inicial: ${totalValue}`);
+    console.log(`Initial total value: ${totalValue}`);
 
     function updateButton() {
         const pricePerNumber = 0.08;
         const totalAmount = (totalValue * pricePerNumber).toFixed(2);
         calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
-        console.log(`Botão atualizado com valor total: R$ ${totalAmount}`);
+        console.log(`Button updated with total amount: R$ ${totalAmount}`);
     }
 
     decrementButton?.addEventListener("click", () => {
         if (totalValue > 1) {
             totalValue--;
             totalValueInput.value = totalValue;
-            console.log(`Valor total decrementado: ${totalValue}`);
+            console.log(`Decremented total value: ${totalValue}`);
             updateButton();
         } else {
-            console.log("O valor total não pode ser menor que 1.");
+            console.log("Total value cannot be less than 1.");
         }
     });
 
     incrementButton?.addEventListener("click", () => {
         totalValue++;
         totalValueInput.value = totalValue;
-        console.log(`Valor total incrementado: ${totalValue}`);
+        console.log(`Incremented total value: ${totalValue}`);
         updateButton();
     });
 
     totalValueInput?.addEventListener("input", () => {
         totalValue = parseFloat(totalValueInput.value) || 1;
-        console.log(`Valor total atualizado via input: ${totalValue}`);
+        console.log(`Total value updated via input: ${totalValue}`);
         updateButton();
     });
 
@@ -1133,24 +1133,24 @@ function copyPixKey() {
             const randomNumber = Math.floor(Math.random() * 9999999) + 1;
             titles.add(randomNumber.toString().padStart(7, "0"));
         }
-        console.log(`Gerados ${quantity} títulos aleatórios.`);
+        console.log(`Generated ${quantity} random titles.`);
         return Array.from(titles);
     }
 
     function startCountdown() {
         let timeLeft = 600; // 10 minutos em segundos
-        console.log("Contagem regressiva iniciada por 10 minutos.");
+        console.log("Countdown started for 10 minutes.");
         countdownElement.style.display = "block";
 
         function updateCountdown() {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             countdownElement.textContent = `Você tem ${minutes}:${seconds < 10 ? '0' : ''}${seconds} para pagar.`;
-            console.log(`Contagem regressiva atualizada: ${minutes}:${seconds}`);
+            console.log(`Countdown updated: ${minutes}:${seconds}`);
 
             if (timeLeft <= 0) {
                 countdownElement.textContent = "O tempo para o pagamento expirou.";
-                console.log("Contagem regressiva expirou.");
+                console.log("Countdown expired.");
             } else {
                 timeLeft--;
                 setTimeout(updateCountdown, 1000);
@@ -1161,26 +1161,26 @@ function copyPixKey() {
     }
 
     calculateButton.addEventListener("click", async () => {
-        console.log("Botão de cálculo clicado.");
+        console.log("Calculate button clicked.");
         const phone = localStorage.getItem("userPhone");
         const modal = document.getElementById("modal");
 
         if (!phone) {
-            console.log("Número de telefone não encontrado no armazenamento local. Mostrando modal.");
+            console.log("No phone number found in local storage. Showing modal.");
             modal.style.display = "flex";
             return;
         }
 
         const pricePerNumber = 0.08;
         const totalAmount = (totalValue * pricePerNumber).toFixed(2);
-        console.log(`Valor total a processar: R$ ${totalAmount}`);
+        console.log(`Total amount to process: R$ ${totalAmount}`);
 
         loadingElement.style.display = "block";
         pixKeyInput.value = "";
         document.getElementById("pix-container").style.display = "none";
 
         try {
-            console.log("Enviando solicitação para gerar chave Pix...");
+            console.log("Sending request to generate PIX key...");
             const response = await fetch("https://rifas-3c8k.onrender.com/gerar-chave-pix", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -1193,7 +1193,7 @@ function copyPixKey() {
 
             const data = await response.json();
             if (data.txid && data.qrcode && data.copiaECola) {
-                console.log("Chave Pix e QR code gerados com sucesso.");
+                console.log("PIX key and QR code generated successfully.");
                 document.getElementById("pix-container").style.display = "block";
                 pixKeyInput.value = data.qrcode;
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
@@ -1201,27 +1201,28 @@ function copyPixKey() {
                 copyButton.style.display = "inline-block";
                 startCountdown();
             } else {
-                console.log("Erro: Dados de chave Pix ausentes na resposta.");
+                console.log("Error: Missing PIX key data in the response.");
                 pixKeyInput.value = "Erro ao gerar a chave Pix.";
             }
         } catch (error) {
             console.error("Erro ao conectar com o servidor:", error);
             pixKeyInput.value = "Erro ao conectar com o servidor.";
         } finally {
-            console.log("Ocultando o elemento de carregamento.");
+            console.log("Hiding loading element.");
             loadingElement.style.display = "none";
         }
     });
 
     copyButton?.addEventListener("click", () => {
         navigator.clipboard.writeText(pixKeyInput.value).then(() => {
-            console.log("Chave Pix copiada para a área de transferência.");
+            console.log("PIX key copied to clipboard.");
             alert("Chave Pix copiada com sucesso!");
         }).catch(err => {
             console.error("Erro ao copiar a chave Pix:", err);
         });
     });
 </script>
+
 
 
 
