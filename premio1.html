@@ -972,42 +972,55 @@
 
 <!-- Campo para somar o valor -->
 <div class="footer-buttons">
-    <!-- Adicionando o id "totalValue" no campo de entrada -->
     <button id="decrement">-</button>
     <input id="totalValue" type="number" value="5" min="1">
     <button id="increment">+</button>
 </div>
 <button id="calculateButton">Quero participar R$ 1,95</button>
+
+<div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
+    <div class="countdown" id="countdown" style="display: none;"></div>
+</div>
+
+<div id="pix-container" style="display: none; text-align: center;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 400px; margin: 0 auto;">
+        <input id="pixKey" 
+               type="text" 
+               readonly 
+               style="flex: 1; 
+                      text-align: center; 
+                      font-size: 16px; 
+                      border: 1px solid #ccc; 
+                      border-radius: 5px; 
+                      padding: 10px;" />
+        <button id="copy-pix-key-button" style="display: none; padding: 10px; font-size: 14px;">Copiar</button>
+    </div>
+</div>
+
+<!-- Adicionando a imagem do QR Code abaixo do campo da chave Pix -->
 <div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
     <div class="countdown" id="countdown" style="display: none;"></div>
     <img 
         width="250" 
         height="250" 
         src="" 
-        style="display: none;" 
+        style="display: none; margin-top: 20px;" 
         id="qrcodeImage"
     />
 </div>
-<div id="selectedTitles"></div>
-
-<div id="pix-container">
-    <div id="pix-box">
-        <div id="pixKey" style="text-align: center; word-wrap: break-word; overflow-wrap: break-word; width: 100%; margin: 0 auto;"></div>
-    </div><br>
-    <button id="copy-pix-key-button" style="display:none;">Copiar chave Pix</button>
-</div>
-
 <div id="titulo-container" style="display:none;">
     <h3>Títulos Disponíveis:</h3>
     <ul id="titulo-list"></ul>
 </div>
+
+<div id="selectedTitles"></div>
 
 <script>
     const decrementButton = document.getElementById("decrement");
     const incrementButton = document.getElementById("increment");
     const totalValueInput = document.getElementById("totalValue");
     const calculateButton = document.getElementById("calculateButton");
-    const pixKeyDiv = document.getElementById("pixKey");
+    const pixKeyInput = document.getElementById("pixKey");
     const selectedTitlesDiv = document.getElementById("selectedTitles");
     const copyButton = document.getElementById("copy-pix-key-button");
     const qrcodeImage = document.getElementById("qrcodeImage");
@@ -1094,7 +1107,8 @@
 
             const data = await response.json();
             if (data.txid && data.qrcode && data.copiaECola) {
-                pixKeyDiv.textContent = data.qrcode;
+                document.getElementById("pix-container").style.display = "block";
+                pixKeyInput.value = data.qrcode;
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
                 qrcodeImage.style.display = "block";
                 copyButton.style.display = "inline-block";
@@ -1112,9 +1126,8 @@
                         if (statusData.status === "approved") {
                             clearInterval(paymentChecker);
                             const titles = generateRandomTitles(totalValue);
-                            selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.filter(title => title !== "0000001" && title !== "0000002").map(title => `<li>${title}</li>`).join("")}</ul>`;
-                            pixKeyDiv.style.display = "none";
-                            copyButton.style.display = "none";
+                            selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
+                            document.getElementById("pix-container").style.display = "none";
                             qrcodeImage.style.display = "none";
                             countdownElement.style.display = "none";
                         }
@@ -1123,22 +1136,24 @@
                     }
                 }, 5000);
             } else {
-                pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
+                pixKeyInput.value = "Erro ao gerar a chave Pix.";
             }
         } catch (error) {
             console.error("Erro ao conectar com o servidor:", error);
-            pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
+            pixKeyInput.value = "Erro ao conectar com o servidor.";
         }
     });
 
     copyButton?.addEventListener("click", () => {
-        navigator.clipboard.writeText(pixKeyDiv.textContent).then(() => {
+        navigator.clipboard.writeText(pixKeyInput.value).then(() => {
             alert("Chave Pix copiada com sucesso!");
         }).catch(err => {
             console.error("Erro ao copiar a chave Pix:", err);
         });
     });
 </script>
+
+
 
 
 
