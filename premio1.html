@@ -979,28 +979,7 @@
 </div>
 <button id="calculateButton">Quero participar R$ 1,95</button>
 <div style="display: flex; justify-content: center; align-items: center; height: auto; padding: 20px 0; flex-direction: column;">
-    <div class="countdown" id="countdown"></div>
-
-    <script>
-        var timeLeft = 600; // 10 minutos em segundos
-        var countdownElement = document.getElementById('countdown');
-
-        function updateCountdown() {
-            var minutes = Math.floor(timeLeft / 60);
-            var seconds = timeLeft % 60;
-            countdownElement.textContent = "Você tem " + minutes + ":" + (seconds < 10 ? '0' : '') + seconds + " para pagar.";
-
-            if (timeLeft <= 0) {
-                countdownElement.textContent = "O tempo para o pagamento expirou.";
-            } else {
-                timeLeft--;
-                setTimeout(updateCountdown, 1000);
-            }
-        }
-
-        // Inicia a contagem regressiva
-        updateCountdown();
-    </script>
+    <div class="countdown" id="countdown" style="display: none;"></div>
     <img 
         width="250" 
         height="250" 
@@ -1032,6 +1011,7 @@
     const selectedTitlesDiv = document.getElementById("selectedTitles");
     const copyButton = document.getElementById("copy-pix-key-button");
     const qrcodeImage = document.getElementById("qrcodeImage");
+    const countdownElement = document.getElementById('countdown');
 
     let totalValue = parseFloat(totalValueInput?.value) || 1;
 
@@ -1069,6 +1049,26 @@
         return Array.from(titles);
     }
 
+    function startCountdown() {
+        let timeLeft = 600; // 10 minutos em segundos
+        countdownElement.style.display = "block";
+
+        function updateCountdown() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            countdownElement.textContent = `Você tem ${minutes}:${seconds < 10 ? '0' : ''}${seconds} para pagar.`;
+
+            if (timeLeft <= 0) {
+                countdownElement.textContent = "O tempo para o pagamento expirou.";
+            } else {
+                timeLeft--;
+                setTimeout(updateCountdown, 1000);
+            }
+        }
+
+        updateCountdown();
+    }
+
     calculateButton.addEventListener("click", async () => {
         const phone = localStorage.getItem("userPhone");
         const modal = document.getElementById("modal");
@@ -1098,6 +1098,7 @@
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
                 qrcodeImage.style.display = "block";
                 copyButton.style.display = "inline-block";
+                startCountdown();
 
                 const paymentChecker = setInterval(async () => {
                     try {
@@ -1115,6 +1116,7 @@
                             pixKeyDiv.style.display = "none";
                             copyButton.style.display = "none";
                             qrcodeImage.style.display = "none";
+                            countdownElement.style.display = "none";
                         }
                     } catch (error) {
                         console.error("Erro ao verificar o pagamento:", error);
