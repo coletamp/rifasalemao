@@ -697,6 +697,27 @@
   text-align: center;
   margin: 10px 0; /* Espaçamento entre os elementos */
 }
+	    /* Estilo para a ampulheta animada */
+.hourglass {
+    border: 4px solid transparent;
+    border-top: 4px solid #555;
+    border-bottom: 4px solid #555;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: rotate 1.5s infinite linear;
+    margin: 0 auto 10px;
+}
+
+/* Animação de rotação */
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 	           
     </style>
 </head>
@@ -979,6 +1000,7 @@
 <button id="calculateButton">Quero participar R$ 2,20</button>
 
 <div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <div class="hourglass"></div>
     <p>Gerando chave Pix, aguarde...</p>
 </div>
 
