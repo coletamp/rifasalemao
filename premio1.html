@@ -1158,11 +1158,10 @@
                 startCountdown();
 
                 // Agora, após a exibição da chave Pix, vamos aguardar a confirmação do pagamento
-                const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/confirmar-pagamento", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ txid: data.txid })
-                });
+                const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/confirmar-pagamento?txid=" + data.txid, {
+    method: "GET", // Alterar para GET
+    headers: { "Content-Type": "application/json" }
+});
 
                 const statusData = await statusResponse.json();
 
