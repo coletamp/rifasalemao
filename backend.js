@@ -84,30 +84,6 @@ async function verificarStatusPagamento(txid) {
   }
 }
 
-// Função para consultar o status do pagamento até que ele seja aprovado
-async function monitorarPagamento(txid, qrcodeData) {
-  let status = "pendente";
-  try {
-    while (status !== "approved") {
-      status = await verificarStatusPagamento(txid);
-
-      if (status === "approved") {
-        // Atualiza o status para 'approved' no pagamento
-        qrcodeData.status = status;
-        salvarPagamento(qrcodeData);
-        console.log(`Pagamento confirmado: txid=${txid}, status=approved`);
-        break;
-      }
-
-      // Espera 1 minuto antes de consultar novamente
-      console.log(`Status do pagamento ${txid} ainda não aprovado. Verificando novamente em 1 minuto...`);
-      await new Promise(resolve => setTimeout(resolve, 60000)); // Aguardar 1 minuto
-    }
-  } catch (error) {
-    console.error("Erro ao monitorar pagamento:", error.message);
-  }
-}
-
 // Rota para gerar a chave PIX e salvar o pagamento no arquivo
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
@@ -121,9 +97,6 @@ app.post("/gerar-chave-pix", async (req, res) => {
     // Salvar a transação no arquivo com status 'pendente'
     salvarPagamento(qrcodeData);
 
-    // Monitorar o status do pagamento
-    monitorarPagamento(qrcodeData.txid, qrcodeData);
-
     console.log(`Chave PIX gerada com sucesso: txid=${qrcodeData.txid}, valor=${qrcodeData.valor}, email=${qrcodeData.payerEmail}`);
     res.json(qrcodeData);
   } catch (error) {
@@ -132,14 +105,34 @@ app.post("/gerar-chave-pix", async (req, res) => {
   }
 });
 
-// Rota para listar apenas os pagamentos aprovados
-app.get("/pagamentos", (req, res) => {
+// Rota para confirmar o pagamento e retornar os títulos apenas se o status for 'approved'
+app.get("/confirmar-pagamento", async (req, res) => {
   try {
-    const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
-    const pagamentosAprovados = pagamentos.filter((p) => p.status === "approved");
-    res.json(pagamentosAprovados);
+    const { txid } = req.query;
+    if (!txid) {
+      return res.status(400).json({ error: "TXID não fornecido" });
+    }
+
+    // Verificar o status do pagamento
+    const status = await verificarStatusPagamento(txid);
+
+    if (status === "approved") {
+      // Buscar os pagamentos aprovados
+      const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
+      const pagamento = pagamentos.find((p) => p.txid === txid);
+      if (pagamento) {
+        pagamento.status = status; // Atualizar o status para aprovado
+        salvarPagamento(pagamento); // Atualizar no arquivo
+        return res.json({ status, titulos: pagamento }); // Enviar os títulos junto com o status aprovado
+      }
+      return res.status(404).json({ error: "Pagamento não encontrado" });
+    } else {
+      // Retornar apenas a chave PIX, caso o pagamento não tenha sido aprovado
+      return res.json({ status });
+    }
   } catch (error) {
-    res.status(500).json({ error: "Erro ao carregar pagamentos" });
+    console.error("Erro ao confirmar pagamento:", error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
