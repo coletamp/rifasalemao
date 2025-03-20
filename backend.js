@@ -106,7 +106,7 @@ app.post("/gerar-chave-pix", async (req, res) => {
 });
 
 // Rota para confirmar o pagamento e retornar os títulos apenas se o status for 'approved'
-app.get("/confirmar-pagamento", async (req, res) => {
+app.post("/confirmar-pagamento", async (req, res) => {
   try {
     const { txid } = req.query;
     if (!txid) {
