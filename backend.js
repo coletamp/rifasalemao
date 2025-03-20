@@ -45,21 +45,26 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
       }
     );
 
-    const qrcodeData = {
+    const qrcodeData = response.data.point_of_interaction?.transaction_data;
+    if (!qrcodeData) {
+      throw new Error("Dados de pagamento não encontrados na resposta");
+    }
+
+    const qrcode = {
       txid: response.data.id,
-      qrcode: response.data.point_of_interaction.transaction_data.qr_code,
-      copiaECola: response.data.point_of_interaction.transaction_data.qr_code_base64,
+      qrcode: qrcodeData.qr_code,
+      copiaECola: qrcodeData.qr_code_base64,
       valor,
       payerEmail,
       payerCpf,
       status: "pendente", // Inicialmente, o status é "pendente"
     };
 
-    console.log(`Chave PIX gerada: ${JSON.stringify(qrcodeData)}`);
-    return qrcodeData;
+    console.log(`Chave PIX gerada: ${JSON.stringify(qrcode)}`);
+    return qrcode;
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || "Erro ao gerar chave PIX");
+    throw new Error(error.response?.data?.message || "Erro desconhecido");
   }
 }
 
@@ -70,26 +75,31 @@ function salvarPagamento(pagamento) {
   fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 }
 
-// Função para verificar o status de um pagamento
-async function verificarStatusPagamento(txid) {
+// Rota para verificar o status de um pagamento manualmente
+app.post("/verificar-status", async (req, res) => {
+  const { txid } = req.body;
+  if (!txid) {
+    return res.status(400).json({ error: "txid não fornecido" });
+  }
+
   try {
     const response = await axios.get(`https://api.mercadopago.com/v1/payments/${txid}`, {
       headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
     });
 
-    return response.data.status;
+    return res.json({ status: response.data.status });
   } catch (error) {
     console.error("Erro ao verificar status do pagamento:", error.message);
-    throw new Error("Erro ao verificar status do pagamento");
+    return res.status(500).json({ error: "Erro ao verificar status do pagamento" });
   }
-}
+});
 
 // Rota para gerar a chave PIX e salvar o pagamento no arquivo
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor, payerEmail, payerCpf } = req.body;
-    if (!valor || isNaN(valor) || valor <= 0) {
-      return res.status(400).json({ error: "Valor inválido" });
+    if (!valor || !payerEmail || !payerCpf || isNaN(valor) || valor <= 0) {
+      return res.status(400).json({ error: "Dados inválidos ou incompletos" });
     }
 
     const qrcodeData = await gerarChavePix(parseFloat(valor), payerEmail, payerCpf);
@@ -114,7 +124,7 @@ app.post("/confirmar-pagamento", async (req, res) => {
     }
 
     // Verificar o status do pagamento
-    const status = await verificarStatusPagamento(txid);
+    const status = await verificarStatus(txid);
 
     if (status === "approved") {
       // Buscar os pagamentos aprovados
