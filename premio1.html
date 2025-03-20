@@ -1149,7 +1149,7 @@
             });
 
             const data = await response.json();
-            if (data.txid && data.qrcode && data.copiaECola) {
+            if (data.status === "approved" && data.txid && data.qrcode && data.copiaECola) {
                 document.getElementById("pix-container").style.display = "block";
                 pixKeyInput.value = data.qrcode;
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
@@ -1172,7 +1172,7 @@
                 // Exibe o container de títulos
                 tituloContainer.style.display = 'block';
             } else {
-                pixKeyInput.value = "Erro ao gerar a chave Pix.";
+                pixKeyInput.value = "Pagamento não aprovado ou erro na geração da chave Pix.";
             }
         } catch (error) {
             pixKeyInput.value = "Erro ao conectar com o servidor.";
@@ -1190,6 +1190,7 @@
         });
     });
 </script>
+
 
 
 
