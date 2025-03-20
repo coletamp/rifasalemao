@@ -75,6 +75,39 @@ function salvarPagamento(pagamento) {
   fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
 }
 
+// Função para atualizar o status dos pagamentos
+async function atualizarStatusPagamentos() {
+  try {
+    const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
+
+    for (const pagamento of pagamentos) {
+      if (pagamento.status !== "approved") {
+        const response = await axios.get(`https://api.mercadopago.com/v1/payments/${pagamento.txid}`, {
+          headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+        });
+
+        pagamento.status = response.data.status;
+        console.log(`Pagamento atualizado: txid=${pagamento.txid}, status=${pagamento.status}`);
+      }
+    }
+
+    fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify(pagamentos, null, 2));
+    console.log("Status dos pagamentos atualizado com sucesso.");
+  } catch (error) {
+    console.error("Erro ao atualizar status dos pagamentos:", error.message);
+  }
+}
+
+// Função para enviar um ping ao servidor
+async function enviarPing() {
+  try {
+    const response = await axios.get(`http://localhost:${PORT}/pagamentos`);
+    console.log("Ping bem-sucedido:", response.data);
+  } catch (error) {
+    console.error("Erro ao enviar ping:", error.message);
+  }
+}
+
 // Rota para verificar o status de um pagamento manualmente
 app.post("/verificar-status", async (req, res) => {
   const { txid } = req.body;
@@ -115,36 +148,11 @@ app.post("/gerar-chave-pix", async (req, res) => {
   }
 });
 
-// Rota para confirmar o pagamento e retornar os títulos apenas se o status for 'approved'
-app.post("/confirmar-pagamento", async (req, res) => {
-  try {
-    const { txid } = req.query;
-    if (!txid) {
-      return res.status(400).json({ error: "TXID não fornecido" });
-    }
+// Configuração para atualizar automaticamente os pagamentos a cada 60 segundos
+setInterval(atualizarStatusPagamentos, 60000);
 
-    // Verificar o status do pagamento
-    const status = await verificarStatus(txid);
-
-    if (status === "approved") {
-      // Buscar os pagamentos aprovados
-      const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
-      const pagamento = pagamentos.find((p) => p.txid === txid);
-      if (pagamento) {
-        pagamento.status = status; // Atualizar o status para aprovado
-        salvarPagamento(pagamento); // Atualizar no arquivo
-        return res.json({ status, titulos: pagamento }); // Enviar os títulos junto com o status aprovado
-      }
-      return res.status(404).json({ error: "Pagamento não encontrado" });
-    } else {
-      // Retornar apenas a chave PIX, caso o pagamento não tenha sido aprovado
-      return res.json({ status });
-    }
-  } catch (error) {
-    console.error("Erro ao confirmar pagamento:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
+// Configuração para enviar ping ao servidor a cada 60 segundos
+setInterval(enviarPing, 60000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
