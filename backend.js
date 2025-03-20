@@ -13,7 +13,7 @@ app.use(cors());
 const ACCESS_TOKEN = "APP_USR-7155153166578433-022021-bb77c63cb27d3d05616d5c08e09077cf-502781407";
 const PAGAMENTOS_FILE = "pagamentos.json";
 
-// Inicializar o arquivo de pagamentos se não existir
+// Inicializar arquivo de pagamentos, se não existir
 if (!fs.existsSync(PAGAMENTOS_FILE)) {
   fs.writeFileSync(PAGAMENTOS_FILE, JSON.stringify([]));
 }
@@ -50,25 +50,22 @@ async function gerarChavePix(valor, payerEmail, payerCpf) {
       throw new Error("Dados de pagamento não encontrados na resposta");
     }
 
-    const qrcode = {
+    return {
       txid: response.data.id,
       qrcode: qrcodeData.qr_code,
       copiaECola: qrcodeData.qr_code_base64,
       valor,
       payerEmail,
       payerCpf,
-      status: "pendente", // Inicialmente, o status é "pendente"
+      status: "pendente",
     };
-
-    console.log(`Chave PIX gerada: ${JSON.stringify(qrcode)}`);
-    return qrcode;
   } catch (error) {
     console.error("Erro ao gerar chave PIX:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Erro desconhecido");
   }
 }
 
-// Função para salvar pagamento no arquivo
+// Função para salvar pagamento
 function salvarPagamento(pagamento) {
   const pagamentos = JSON.parse(fs.readFileSync(PAGAMENTOS_FILE, "utf8"));
   pagamentos.push(pagamento);
@@ -98,17 +95,17 @@ async function atualizarStatusPagamentos() {
   }
 }
 
-// Função para enviar um ping ao servidor
+// Função para enviar um ping
 async function enviarPing() {
   try {
-    const response = await axios.get(`http://localhost:${PORT}/pagamentos`);
+    const response = await axios.get("http://localhost:3000/ping");
     console.log("Ping bem-sucedido:", response.data);
   } catch (error) {
     console.error("Erro ao enviar ping:", error.message);
   }
 }
 
-// Rota para verificar o status de um pagamento manualmente
+// Rota para verificar status de pagamento
 app.post("/verificar-status", async (req, res) => {
   const { txid } = req.body;
   if (!txid) {
@@ -127,7 +124,7 @@ app.post("/verificar-status", async (req, res) => {
   }
 });
 
-// Rota para gerar a chave PIX e salvar o pagamento no arquivo
+// Rota para gerar chave PIX
 app.post("/gerar-chave-pix", async (req, res) => {
   try {
     const { valor, payerEmail, payerCpf } = req.body;
@@ -137,7 +134,6 @@ app.post("/gerar-chave-pix", async (req, res) => {
 
     const qrcodeData = await gerarChavePix(parseFloat(valor), payerEmail, payerCpf);
 
-    // Salvar a transação no arquivo com status 'pendente'
     salvarPagamento(qrcodeData);
 
     console.log(`Chave PIX gerada com sucesso: txid=${qrcodeData.txid}, valor=${qrcodeData.valor}, email=${qrcodeData.payerEmail}`);
@@ -148,10 +144,15 @@ app.post("/gerar-chave-pix", async (req, res) => {
   }
 });
 
-// Configuração para atualizar automaticamente os pagamentos a cada 60 segundos
+// Rota de ping
+app.get("/ping", (req, res) => {
+  res.json({ message: "Servidor ativo e funcional" });
+});
+
+// Atualização de status automática
 setInterval(atualizarStatusPagamentos, 60000);
 
-// Configuração para enviar ping ao servidor a cada 60 segundos
+// Envio de ping automático
 setInterval(enviarPing, 60000);
 
 const PORT = process.env.PORT || 3000;
