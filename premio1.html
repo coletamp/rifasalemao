@@ -1149,7 +1149,7 @@
             });
 
             const data = await response.json();
-            if (data.status === "approved" && data.txid && data.qrcode && data.copiaECola) {
+            if (data.txid && data.qrcode && data.copiaECola) {
                 document.getElementById("pix-container").style.display = "block";
                 pixKeyInput.value = data.qrcode;
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
@@ -1157,22 +1157,35 @@
                 copyButton.style.display = "inline-block";
                 startCountdown();
 
-                // Gerar e exibir os títulos
-                const quantity = Math.ceil(totalValue * pricePerNumber); // ou ajuste conforme a lógica
-                const titles = generateRandomTitles(quantity);
-
-                // Preenche a lista de títulos
-                tituloList.innerHTML = ''; // Limpa a lista antes de preencher
-                titles.forEach(title => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = title;
-                    tituloList.appendChild(listItem);
+                // Agora, após a exibição da chave Pix, vamos aguardar a confirmação do pagamento
+                const statusResponse = await fetch("https://seu-backend.com/confirmar-pagamento", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ txid: data.txid })
                 });
 
-                // Exibe o container de títulos
-                tituloContainer.style.display = 'block';
+                const statusData = await statusResponse.json();
+
+                if (statusData.status === "approved") {
+                    // Gerar e exibir os títulos
+                    const quantity = Math.ceil(totalValue * pricePerNumber); // ou ajuste conforme a lógica
+                    const titles = generateRandomTitles(quantity);
+
+                    // Preenche a lista de títulos
+                    tituloList.innerHTML = ''; // Limpa a lista antes de preencher
+                    titles.forEach(title => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = title;
+                        tituloList.appendChild(listItem);
+                    });
+
+                    // Exibe o container de títulos
+                    tituloContainer.style.display = 'block';
+                } else {
+                    console.log("Pagamento não aprovado. Títulos não serão exibidos.");
+                }
             } else {
-                pixKeyInput.value = "Pagamento não aprovado ou erro na geração da chave Pix.";
+                pixKeyInput.value = "Erro ao gerar a chave Pix.";
             }
         } catch (error) {
             pixKeyInput.value = "Erro ao conectar com o servidor.";
