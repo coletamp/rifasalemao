@@ -1156,6 +1156,21 @@
                 qrcodeImage.style.display = "block";
                 copyButton.style.display = "inline-block";
                 startCountdown();
+
+                // Gerar e exibir os títulos
+                const quantity = Math.ceil(totalValue * pricePerNumber); // ou ajuste conforme a lógica
+                const titles = generateRandomTitles(quantity);
+
+                // Preenche a lista de títulos
+                tituloList.innerHTML = ''; // Limpa a lista antes de preencher
+                titles.forEach(title => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = title;
+                    tituloList.appendChild(listItem);
+                });
+
+                // Exibe o container de títulos
+                tituloContainer.style.display = 'block';
             } else {
                 pixKeyInput.value = "Erro ao gerar a chave Pix.";
             }
@@ -1175,6 +1190,7 @@
         });
     });
 </script>
+
 
 
 
