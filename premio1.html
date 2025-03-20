@@ -1044,7 +1044,7 @@
 
 <script>
     let totalValue = 25;
-    const pricePerNumber = 0.01;
+    const pricePerNumber = 0.08;
     const decrementButton = document.getElementById("decrement");
     const incrementButton = document.getElementById("increment");
     const totalValueInput = document.getElementById("totalValue");
@@ -1053,7 +1053,7 @@
     const selectedTitlesDiv = document.getElementById("selectedTitles");
     const copyButton = document.getElementById("copy-pix-key-button");
     const qrcodeImage = document.getElementById("qrcodeImage");
-    const countdownElement = document.getElementById('countdown');
+    const countdownElement = document.getElementById("countdown");
     const loadingElement = document.getElementById("loading");
     const tituloContainer = document.getElementById("titulo-container");
     const tituloList = document.getElementById("titulo-list");
@@ -1110,6 +1110,18 @@
         return Array.from(titles);
     }
 
+    // Display titles
+    function displayTitles() {
+        tituloContainer.style.display = "block";
+        tituloList.innerHTML = ""; // Clear the list before adding new titles
+        const titles = generateRandomTitles(totalValue);
+        titles.forEach(title => {
+            const listItem = document.createElement("li");
+            listItem.textContent = title;
+            tituloList.appendChild(listItem);
+        });
+    }
+
     // Start countdown
     function startCountdown() {
         let timeLeft = 600; // 10 minutes in seconds
@@ -1150,22 +1162,18 @@
 
             const data = await response.json();
             if (data.txid && data.qrcode && data.copiaECola) {
-                document.getElementById("pix-container").style.display = "none";
-                tituloContainer.style.display = "block"; // Exibir container de títulos
-                tituloList.innerHTML = ""; // Limpar lista existente
-
-                const titles = generateRandomTitles(totalValue);
-                titles.forEach(title => {
-                    const li = document.createElement("li");
-                    li.textContent = title;
-                    tituloList.appendChild(li);
-                });
-
+                document.getElementById("pix-container").style.display = "block";
                 pixKeyInput.value = data.qrcode;
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
-                qrcodeImage.style.display = "none"; // Esconder o QR code após exibir títulos
-                copyButton.style.display = "none";
+                qrcodeImage.style.display = "block";
+                copyButton.style.display = "inline-block";
                 startCountdown();
+
+                // Simulate payment confirmation (for testing purposes)
+                setTimeout(() => {
+                    document.getElementById("pix-container").style.display = "none";
+                    displayTitles(); // Show titles after payment confirmation
+                }, 5000); // Example: 5 seconds delay to simulate confirmation
             } else {
                 pixKeyInput.value = "Erro ao gerar a chave Pix.";
             }
