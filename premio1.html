@@ -1157,52 +1157,44 @@
                 copyButton.style.display = "inline-block";
                 startCountdown();
 
-                // Agora, após a exibição da chave Pix, vamos aguardar a confirmação do pagamento
-                const statusResponse = await fetch("https://wesleyalemaopremios-com-br.onrender.com/confirmar-pagamento?txid=" + data.txid, {
-    method: "GET", // Alterar para GET
-    headers: { "Content-Type": "application/json" }
-});
+                        const paymentChecker = setInterval(async () => {
+          try {
+            const statusResponse = await fetch("https://rifas-3c8k.onrender.com/verificar-status", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ txid: data.txid }),
+            });
 
-                const statusData = await statusResponse.json();
-
-                if (statusData.status === "approved") {
-                    // Gerar e exibir os títulos
-                    const quantity = Math.ceil(totalValue * pricePerNumber); // ou ajuste conforme a lógica
-                    const titles = generateRandomTitles(quantity);
-
-                    // Preenche a lista de títulos
-                    tituloList.innerHTML = ''; // Limpa a lista antes de preencher
-                    titles.forEach(title => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = title;
-                        tituloList.appendChild(listItem);
-                    });
-
-                    // Exibe o container de títulos
-                    tituloContainer.style.display = 'block';
-                } else {
-                    console.log("Pagamento não aprovado. Títulos não serão exibidos.");
-                }
-            } else {
-                pixKeyInput.value = "Erro ao gerar a chave Pix.";
+            const statusData = await statusResponse.json();
+            if (statusData.status === "approved") {
+              clearInterval(paymentChecker);
+              const titles = generateRandomTitles(totalValue);
+              selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.filter(title => title !== "0000001" && title !== "0000002").map(title => `<li>${title}</li>`).join("")}</ul>`;
+              pixKeyDiv.style.display = "none";
+              copyButton.style.display = "none";
+              qrcodeImage.style.display = "none";
             }
-        } catch (error) {
-            pixKeyInput.value = "Erro ao conectar com o servidor.";
-        } finally {
-            loadingElement.style.display = "none";
-        }
-    });
+          } catch (error) {
+            console.error("Erro ao verificar o pagamento:", error);
+          }
+        }, 5000);
+      } else {
+        pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
+      }
+    } catch (error) {
+      console.error("Erro ao conectar com o servidor:", error);
+      pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
+    }
+  });
 
-    // Copy PIX key to clipboard
-    copyButton.addEventListener("click", () => {
-        navigator.clipboard.writeText(pixKeyInput.value).then(() => {
-            alert("Chave Pix copiada com sucesso!");
-        }).catch(err => {
-            console.error("Erro ao copiar a chave Pix:", err);
-        });
+  copyButton?.addEventListener("click", () => {
+    navigator.clipboard.writeText(pixKeyDiv.textContent).then(() => {
+      alert("Chave Pix copiada com sucesso!");
+    }).catch(err => {
+      console.error("Erro ao copiar a chave Pix:", err);
     });
+  });
 </script>
-
 
 
 
