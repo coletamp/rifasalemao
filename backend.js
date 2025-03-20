@@ -95,15 +95,21 @@ async function atualizarStatusPagamentos() {
   }
 }
 
-// Função para enviar um ping
+// Função para enviar um ping ao servidor
 async function enviarPing() {
   try {
-    const response = await axios.get("http://localhost:3000/ping");
+    const response = await axios.get(`http://localhost:${PORT}/pagamentos`);
     console.log("Ping bem-sucedido:", response.data);
   } catch (error) {
     console.error("Erro ao enviar ping:", error.message);
   }
 }
+
+// Configuração para atualizar automaticamente os pagamentos a cada 60 segundos
+setInterval(atualizarStatusPagamentos, 60000);
+
+// Configuração para enviar ping ao servidor a cada 60 segundos
+setInterval(enviarPing, 60000);
 
 // Rota para verificar status de pagamento
 app.post("/verificar-status", async (req, res) => {
@@ -144,16 +150,8 @@ app.post("/gerar-chave-pix", async (req, res) => {
   }
 });
 
-// Rota de ping
-app.get("/ping", (req, res) => {
-  res.json({ message: "Servidor ativo e funcional" });
-});
-
 // Atualização de status automática
 setInterval(atualizarStatusPagamentos, 60000);
-
-// Envio de ping automático
-setInterval(enviarPing, 60000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
