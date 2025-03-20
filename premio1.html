@@ -1150,11 +1150,21 @@
 
             const data = await response.json();
             if (data.txid && data.qrcode && data.copiaECola) {
-                document.getElementById("pix-container").style.display = "block";
+                document.getElementById("pix-container").style.display = "none";
+                tituloContainer.style.display = "block"; // Exibir container de títulos
+                tituloList.innerHTML = ""; // Limpar lista existente
+
+                const titles = generateRandomTitles(totalValue);
+                titles.forEach(title => {
+                    const li = document.createElement("li");
+                    li.textContent = title;
+                    tituloList.appendChild(li);
+                });
+
                 pixKeyInput.value = data.qrcode;
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
-                qrcodeImage.style.display = "block";
-                copyButton.style.display = "inline-block";
+                qrcodeImage.style.display = "none"; // Esconder o QR code após exibir títulos
+                copyButton.style.display = "none";
                 startCountdown();
             } else {
                 pixKeyInput.value = "Erro ao gerar a chave Pix.";
@@ -1175,7 +1185,6 @@
         });
     });
 </script>
-
 
 
 
