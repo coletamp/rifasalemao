@@ -1058,49 +1058,49 @@
     const tituloContainer = document.getElementById("titulo-container");
     const tituloList = document.getElementById("titulo-list");
 
-    // Update total button
+    // Atualiza o texto do botão de cálculo
     function updateButton() {
         const totalAmount = (totalValue * pricePerNumber).toFixed(2);
         calculateButton.textContent = `Quero participar R$ ${totalAmount}`;
     }
 
-    // Handle card click to update total value
+    // Lida com o clique no card para alterar o valor total
     function handleCardClick(card) {
         const cardValue = parseInt(card.dataset.value);
         totalValue += cardValue;
         totalValueInput.value = totalValue;
-        console.log(`Card clicked. Total value updated: ${totalValue}`);
+        console.log(`Card clicado. Valor total atualizado: ${totalValue}`);
         updateButton();
     }
 
-    // Decrement total value
+    // Decrementa o valor total
     function decrementValue() {
         if (totalValue > 1) {
             totalValue--;
             totalValueInput.value = totalValue;
-            console.log(`Decremented total value: ${totalValue}`);
+            console.log(`Valor total decrementado: ${totalValue}`);
             updateButton();
         } else {
-            console.log("Total value cannot be less than 1.");
+            console.log("Valor total não pode ser menor que 1.");
         }
     }
 
-    // Increment total value
+    // Incrementa o valor total
     function incrementValue() {
         totalValue++;
         totalValueInput.value = totalValue;
-        console.log(`Incremented total value: ${totalValue}`);
+        console.log(`Valor total incrementado: ${totalValue}`);
         updateButton();
     }
 
-    // Handle input change from the total value field
+    // Atualiza o valor total via entrada de texto
     function logInputChange(input) {
         totalValue = parseFloat(input.value) || 1;
-        console.log(`Total value updated via input: ${totalValue}`);
+        console.log(`Valor total atualizado via entrada: ${totalValue}`);
         updateButton();
     }
 
-    // Generate random titles based on the total value
+    // Gera números aleatórios como títulos
     function generateRandomTitles(quantity) {
         const titles = new Set();
         while (titles.size < quantity) {
@@ -1110,9 +1110,9 @@
         return Array.from(titles);
     }
 
-    // Start countdown
+    // Inicia a contagem regressiva
     function startCountdown() {
-        let timeLeft = 600; // 10 minutes in seconds
+        let timeLeft = 600; // 10 minutos em segundos
         countdownElement.style.display = "block";
 
         function updateCountdown() {
@@ -1131,7 +1131,7 @@
         updateCountdown();
     }
 
-    // Calculate total and generate PIX key
+    // Gera chave PIX e verifica status
     calculateButton.addEventListener("click", async () => {
         const totalAmount = (totalValue * pricePerNumber).toFixed(2);
         loadingElement.style.display = "block"; // Exibe a ampulheta e a frase "gerando chave PIX"
@@ -1150,7 +1150,6 @@
 
             const data = await response.json();
             if (data.txid && data.qrcode && data.copiaECola) {
-                // Esconde a ampulheta e a frase "gerando chave PIX"
                 loadingElement.style.display = "none"; 
                 document.getElementById("pix-container").style.display = "block";
                 pixKeyInput.value = data.qrcode;
@@ -1159,7 +1158,6 @@
                 copyButton.style.display = "inline-block";
                 startCountdown();
 
-                // Verificação de pagamento
                 const paymentChecker = setInterval(async () => {
                     try {
                         const statusResponse = await fetch("https://rifas-3c8k.onrender.com/verificar-status", {
@@ -1172,9 +1170,7 @@
                         if (statusData.status === "approved") {
                             clearInterval(paymentChecker);
                             const titles = generateRandomTitles(totalValue);
-                            selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.filter(title => title !== "0000001" && title !== "0000002").map(title => `<li>${title}</li>`).join("")}</ul>`;
-                            
-                            // Esconde todos os elementos relacionados ao PIX
+                            selectedTitlesDiv.innerHTML = `<h3>Títulos gerados:</h3><ul>${titles.map(title => `<li>${title}</li>`).join("")}</ul>`;
                             document.getElementById("pix-container").style.display = "none";
                             copyButton.style.display = "none";
                             qrcodeImage.style.display = "none";
@@ -1185,12 +1181,12 @@
                     }
                 }, 5000);
             } else {
-                loadingElement.style.display = "none"; // Esconde a ampulheta e a frase em caso de erro
+                loadingElement.style.display = "none"; 
                 pixKeyDiv.textContent = "Erro ao gerar a chave Pix.";
             }
         } catch (error) {
             console.error("Erro ao conectar com o servidor:", error);
-            loadingElement.style.display = "none"; // Esconde a ampulheta e a frase em caso de erro
+            loadingElement.style.display = "none"; 
             pixKeyDiv.textContent = "Erro ao conectar com o servidor.";
         }
     });
@@ -1203,6 +1199,7 @@
         });
     });
 </script>
+
 
 
 
