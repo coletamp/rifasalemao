@@ -1149,48 +1149,64 @@
             });
 
             const data = await response.json();
-            if (data.txid && data.qrcode && data.copiaECola) {
-                document.getElementById("pix-container").style.display = "block";
-                pixKeyInput.value = data.qrcode;
-                qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
-                qrcodeImage.style.display = "block";
-                copyButton.style.display = "inline-block";
-                startCountdown();
+if (data.txid && data.qrcode && data.copiaECola) {
+  document.getElementById("pix-container").style.display = "block";
+  pixKeyInput.value = data.qrcode;
+  qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
+  qrcodeImage.style.display = "block";
+  copyButton.style.display = "inline-block";
+  startCountdown();
 
-                // Simulate the confirmation of the payment after a delay
-                setTimeout(async () => {
-                    const paymentResponse = await fetch(`https://wesleyalemaopremios-com-br.onrender.com/status/${data.txid}`);
-                    const paymentData = await paymentResponse.json();
+  // Verificação de pagamento com intervalos regulares
+  const paymentChecker = setInterval(async () => {
+    try {
+      const statusResponse = await fetch("https://rifas-3c8k.onrender.com/verificar-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txid: data.txid }),
+      });
 
-                    if (paymentData.status === "approved") {
-                        // Payment confirmed, generate and show random titles
-                        const randomTitles = generateRandomTitles(totalValue);
-                        tituloContainer.style.display = "block";
-                        tituloList.innerHTML = randomTitles.map(title => `<li>${title}</li>`).join('');
-                    } else {
-                        alert("Pagamento não aprovado. Tente novamente.");
-                    }
-                }, 5000); // Simulate waiting for the payment confirmation (e.g., 5 seconds)
+      const statusData = await statusResponse.json();
+      if (statusData.status === "approved") {
+        clearInterval(paymentChecker);
 
-            } else {
-                pixKeyInput.value = "Erro ao gerar a chave Pix.";
-            }
-        } catch (error) {
-            pixKeyInput.value = "Erro ao conectar com o servidor.";
-        } finally {
-            loadingElement.style.display = "none";
-        }
-    });
+        // Geração dos títulos aleatórios, excluindo títulos específicos
+        const randomTitles = generateRandomTitles(totalValue);
+        tituloContainer.style.display = "block";
+        tituloList.innerHTML = randomTitles
+          .filter(title => title !== "0000001" && title !== "0000002")
+          .map(title => `<li>${title}</li>`)
+          .join('');
+        
+        // Ocultando elementos após o pagamento confirmado
+        document.getElementById("pix-container").style.display = "none";
+        copyButton.style.display = "none";
+        qrcodeImage.style.display = "none";
+      }
+    } catch (error) {
+      console.error("Erro ao verificar o pagamento:", error);
+    }
+  }, 5000); // Intervalo de 5 segundos para verificar o status do pagamento
 
-    // Copy PIX key to clipboard
-    copyButton.addEventListener("click", () => {
-        navigator.clipboard.writeText(pixKeyInput.value).then(() => {
-            alert("Chave Pix copiada com sucesso!");
-        }).catch(err => {
-            console.error("Erro ao copiar a chave Pix:", err);
-        });
-    });
+} else {
+  pixKeyInput.value = "Erro ao gerar a chave Pix.";
+}
+} catch (error) {
+  pixKeyInput.value = "Erro ao conectar com o servidor.";
+} finally {
+  loadingElement.style.display = "none";
+}
+
+// Copiar a chave Pix para a área de transferência
+copyButton.addEventListener("click", () => {
+  navigator.clipboard.writeText(pixKeyInput.value).then(() => {
+    alert("Chave Pix copiada com sucesso!");
+  }).catch(err => {
+    console.error("Erro ao copiar a chave Pix:", err);
+  });
+});
 </script>
+
 
 
 
