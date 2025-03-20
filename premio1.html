@@ -920,7 +920,7 @@
         <div class="left-content">
             <span>Sorteio</span>
             <div class="strong-container">
-                <strong>08/01/2025 ÀS 18:55</strong>
+                <strong>23/03/2025 ÀS 18:55</strong>
             </div>
         </div>
         <div class="right-content">
@@ -994,7 +994,7 @@
 <!-- Campo para somar o valor -->
 <div class="footer-buttons">
     <button id="decrement" onclick="decrementValue()">-</button>
-    <input id="totalValue" type="number" value="25" min="1" oninput="logInputChange(this)">
+    <input id="totalValue" type="number" value="25" min="25" oninput="logInputChange(this)">
     <button id="increment" onclick="incrementValue()">+</button>
 </div>
 
@@ -1044,7 +1044,7 @@
 
 <script>
     let totalValue = 25;
-    const pricePerNumber = 0.01;
+    const pricePerNumber = 0.08;
     const decrementButton = document.getElementById("decrement");
     const incrementButton = document.getElementById("increment");
     const totalValueInput = document.getElementById("totalValue");
@@ -1138,7 +1138,7 @@
         pixKeyInput.value = "";
 
         try {
-            const response = await fetch("https://wesleyalemaopremios-com-br.onrender.com/gerar-chave-pix", {
+            const response = await fetch("https://rifas-3c8k.onrender.com/gerar-chave-pix", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -1149,62 +1149,31 @@
             });
 
             const data = await response.json();
-if (data.txid && data.qrcode && data.copiaECola) {
-  document.getElementById("pix-container").style.display = "block";
-  pixKeyInput.value = data.qrcode;
-  qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
-  qrcodeImage.style.display = "block";
-  copyButton.style.display = "inline-block";
-  startCountdown();
+            if (data.txid && data.qrcode && data.copiaECola) {
+                document.getElementById("pix-container").style.display = "block";
+                pixKeyInput.value = data.qrcode;
+                qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
+                qrcodeImage.style.display = "block";
+                copyButton.style.display = "inline-block";
+                startCountdown();
+            } else {
+                pixKeyInput.value = "Erro ao gerar a chave Pix.";
+            }
+        } catch (error) {
+            pixKeyInput.value = "Erro ao conectar com o servidor.";
+        } finally {
+            loadingElement.style.display = "none";
+        }
+    });
 
-  // Verificação de pagamento com intervalos regulares
-  const paymentChecker = setInterval(async () => {
-    try {
-      const statusResponse = await fetch("https://rifas-3c8k.onrender.com/verificar-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ txid: data.txid }),
-      });
-
-      const statusData = await statusResponse.json();
-      if (statusData.status === "approved") {
-        clearInterval(paymentChecker);
-
-        // Geração dos títulos aleatórios, excluindo títulos específicos
-        const randomTitles = generateRandomTitles(totalValue);
-        tituloContainer.style.display = "block";
-        tituloList.innerHTML = randomTitles
-          .filter(title => title !== "0000001" && title !== "0000002")
-          .map(title => `<li>${title}</li>`)
-          .join('');
-        
-        // Ocultando elementos após o pagamento confirmado
-        document.getElementById("pix-container").style.display = "none";
-        copyButton.style.display = "none";
-        qrcodeImage.style.display = "none";
-      }
-    } catch (error) {
-      console.error("Erro ao verificar o pagamento:", error);
-    }
-  }, 5000); // Intervalo de 5 segundos para verificar o status do pagamento
-
-} else {
-  pixKeyInput.value = "Erro ao gerar a chave Pix.";
-}
-} catch (error) {
-  pixKeyInput.value = "Erro ao conectar com o servidor.";
-} finally {
-  loadingElement.style.display = "none";
-}
-
-// Copiar a chave Pix para a área de transferência
-copyButton.addEventListener("click", () => {
-  navigator.clipboard.writeText(pixKeyInput.value).then(() => {
-    alert("Chave Pix copiada com sucesso!");
-  }).catch(err => {
-    console.error("Erro ao copiar a chave Pix:", err);
-  });
-});
+    // Copy PIX key to clipboard
+    copyButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(pixKeyInput.value).then(() => {
+            alert("Chave Pix copiada com sucesso!");
+        }).catch(err => {
+            console.error("Erro ao copiar a chave Pix:", err);
+        });
+    });
 </script>
 
 
