@@ -921,7 +921,7 @@
         <div class="left-content">
             <span>Sorteio</span>
             <div class="strong-container">
-                <strong>08/01/2025 ÀS 18:55</strong>
+                <strong>26/03/2025 ÀS 18:55</strong>
             </div>
         </div>
         <div class="right-content">
@@ -963,29 +963,30 @@
 });
 	</script>
         <h2 class="centralizado">Selecione a quantidade de títulos</h2>
+
 <!-- Cards Section -->
 <div class="cards">
-    <div class="card" data-value="34">    
+    <div class="card" data-value="34" onclick="handleCardClick(this)">    
         <div class="value">+34</div>
         <div class="label">SELECIONAR</div>
     </div>
-    <div class="card popular" data-value="100">    
+    <div class="card popular" data-value="100" onclick="handleCardClick(this)">    
         <div class="value">+100</div>
         <div class="label">SELECIONAR</div>
     </div>
-    <div class="card" data-value="150">    
+    <div class="card" data-value="150" onclick="handleCardClick(this)">    
         <div class="value">+150</div>
         <div class="label">SELECIONAR</div>
     </div>
-    <div class="card" data-value="400">    
+    <div class="card" data-value="400" onclick="handleCardClick(this)">    
         <div class="value">+400</div>
         <div class="label">SELECIONAR</div>
     </div>
-    <div class="card" data-value="800">    
+    <div class="card" data-value="800" onclick="handleCardClick(this)">    
         <div class="value">+800</div>
         <div class="label">SELECIONAR</div>
     </div>
-    <div class="card" data-value="1000">    
+    <div class="card" data-value="1000" onclick="handleCardClick(this)">    
         <div class="value">+1000</div>
         <div class="label">SELECIONAR</div>
     </div>
@@ -993,11 +994,12 @@
 
 <!-- Campo para somar o valor -->
 <div class="footer-buttons">
-    <button id="decrement">-</button>
-    <input id="totalValue" type="number" value="20" min="20">
-    <button id="increment">+</button>
+    <button id="decrement" onclick="decrementValue()">-</button>
+    <input id="totalValue" type="number" value="25" min="1" oninput="logInputChange(this)">
+    <button id="increment" onclick="incrementValue()">+</button>
 </div>
-<button id="calculateButton">Quero participar R$ 2,20</button>
+
+<button id="calculateButton">Quero participar R$ 2,00</button>
 
 <div id="loading" style="display: none; text-align: center; margin: 20px;">
     <div class="hourglass"></div>
@@ -1019,7 +1021,7 @@
                       border: 1px solid #ccc; 
                       border-radius: 5px; 
                       padding: 10px;" />
-        <button id="copy-pix-key-button" style="display: none; padding: 10px; font-size: 14px;">Copiar</button>
+        <button id="copy-pix-key-button" style="display: none; padding: 10px; font-size: 14px;" onclick="copyPixKey()">Copiar</button>
     </div>
 </div>
 
@@ -1033,6 +1035,7 @@
         id="qrcodeImage"
     />
 </div>
+
 <div id="titulo-container" style="display:none;">
     <h3>Títulos Disponíveis:</h3>
     <ul id="titulo-list"></ul>
@@ -1203,8 +1206,6 @@
 });
 
 </script>
-
-
 
 
 
