@@ -1044,7 +1044,7 @@
 
 <script>
     let totalValue = 25;
-    const pricePerNumber = 0.01;
+    const pricePerNumber = 0.08;
     const decrementButton = document.getElementById("decrement");
     const incrementButton = document.getElementById("increment");
     const totalValueInput = document.getElementById("totalValue");
@@ -1053,7 +1053,7 @@
     const selectedTitlesDiv = document.getElementById("selectedTitles");
     const copyButton = document.getElementById("copy-pix-key-button");
     const qrcodeImage = document.getElementById("qrcodeImage");
-    const countdownElement = document.getElementById("countdown");
+    const countdownElement = document.getElementById('countdown');
     const loadingElement = document.getElementById("loading");
     const tituloContainer = document.getElementById("titulo-container");
     const tituloList = document.getElementById("titulo-list");
@@ -1069,7 +1069,6 @@
         const cardValue = parseInt(card.dataset.value);
         totalValue += cardValue;
         totalValueInput.value = totalValue;
-        console.log(`Card clicked. Total value updated: ${totalValue}`);
         updateButton();
     }
 
@@ -1078,10 +1077,7 @@
         if (totalValue > 1) {
             totalValue--;
             totalValueInput.value = totalValue;
-            console.log(`Decremented total value: ${totalValue}`);
             updateButton();
-        } else {
-            console.log("Total value cannot be less than 1.");
         }
     }
 
@@ -1089,14 +1085,6 @@
     function incrementValue() {
         totalValue++;
         totalValueInput.value = totalValue;
-        console.log(`Incremented total value: ${totalValue}`);
-        updateButton();
-    }
-
-    // Handle input change from the total value field
-    function logInputChange(input) {
-        totalValue = parseFloat(input.value) || 1;
-        console.log(`Total value updated via input: ${totalValue}`);
         updateButton();
     }
 
@@ -1111,15 +1099,14 @@
     }
 
     // Display titles
-    function displayTitles() {
-        tituloContainer.style.display = "block";
-        tituloList.innerHTML = ""; // Clear the list before adding new titles
-        const titles = generateRandomTitles(totalValue);
+    function displayTitles(titles) {
+        tituloList.innerHTML = "";
         titles.forEach(title => {
             const listItem = document.createElement("li");
             listItem.textContent = title;
             tituloList.appendChild(listItem);
         });
+        tituloContainer.style.display = "block";
     }
 
     // Start countdown
@@ -1143,6 +1130,17 @@
         updateCountdown();
     }
 
+    // Confirm payment (simulate payment confirmation)
+    function confirmPayment() {
+        setTimeout(() => {
+            const titles = generateRandomTitles(totalValue);
+            displayTitles(titles);
+            document.getElementById("pix-container").style.display = "none";
+            countdownElement.style.display = "none";
+            alert("Pagamento confirmado! Seus títulos foram gerados.");
+        }, 3000); // Simula uma espera de 3 segundos
+    }
+
     // Calculate total and generate PIX key
     calculateButton.addEventListener("click", async () => {
         const totalAmount = (totalValue * pricePerNumber).toFixed(2);
@@ -1163,17 +1161,14 @@
             const data = await response.json();
             if (data.txid && data.qrcode && data.copiaECola) {
                 document.getElementById("pix-container").style.display = "block";
-                pixKeyInput.value = data.qrcode;
-                qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
+                pixKeyInput.value = data.copiaECola;
+                qrcodeImage.src = `data:image/jpeg;base64,${data.qrcode}`;
                 qrcodeImage.style.display = "block";
                 copyButton.style.display = "inline-block";
                 startCountdown();
 
-                // Simulate payment confirmation (for testing purposes)
-                setTimeout(() => {
-                    document.getElementById("pix-container").style.display = "none";
-                    displayTitles(); // Show titles after payment confirmation
-                }, 5000); // Example: 5 seconds delay to simulate confirmation
+                // Simula confirmação de pagamento
+                confirmPayment();
             } else {
                 pixKeyInput.value = "Erro ao gerar a chave Pix.";
             }
@@ -1193,6 +1188,7 @@
         });
     });
 </script>
+
 
 
 
