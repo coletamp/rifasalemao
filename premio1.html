@@ -1010,6 +1010,13 @@
 </div>
 
 <div id="pix-container" style="display: none; text-align: center;">
+    <!-- Passo a Passo para o PIX -->
+    <div id="pix-steps" style="display: none; margin-bottom: 20px;">
+        <p>1️⃣ - Copie o código PIX abaixo.</p>
+        <p>2️⃣ - Abra o app do seu banco e escolha a opção PIX, como se fosse fazer uma transferência.</p>
+        <p>3️⃣ - Selecione a opção PIX copia e cola, cole a chave copiada e confirme o pagamento.</p>
+    </div>
+
     <div style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 400px; margin: 0 auto;">
         <input id="pixKey" 
                type="text" 
@@ -1057,6 +1064,7 @@
     const loadingElement = document.getElementById("loading");
     const tituloContainer = document.getElementById("titulo-container");
     const tituloList = document.getElementById("titulo-list");
+    const pixSteps = document.getElementById("pix-steps");
 
     // Update total button
     function updateButton() {
@@ -1157,6 +1165,7 @@
                 qrcodeImage.src = `data:image/jpeg;base64,${data.copiaECola}`;
                 qrcodeImage.style.display = "block";
                 copyButton.style.display = "inline-block";
+                pixSteps.style.display = "block"; // Exibe o passo a passo
                 startCountdown();
 
                 // Verificação de pagamento
@@ -1196,13 +1205,13 @@
     });
 
     copyButton?.addEventListener("click", () => {
-    const pixKeyValue = pixKeyInput.value; // Obtém o valor da chave Pix do campo de entrada
-    navigator.clipboard.writeText(pixKeyValue).then(() => {
-        alert("Chave Pix copiada com sucesso!");
-    }).catch(err => {
-        console.error("Erro ao copiar a chave Pix:", err);
+        const pixKeyValue = pixKeyInput.value; // Obtém o valor da chave Pix do campo de entrada
+        navigator.clipboard.writeText(pixKeyValue).then(() => {
+            alert("Chave Pix copiada com sucesso!");
+        }).catch(err => {
+            console.error("Erro ao copiar a chave Pix:", err);
+        });
     });
-});
 </script>
 
 
